@@ -59,3 +59,28 @@ export const login = asyncHandler(async (req, res) => {
     )
   );
 });
+
+export const getCurrentUser = asyncHandler(async (req, res) => {
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Current user fetched successfully",
+      req.user
+    )
+  );
+});
+
+export const logout = asyncHandler(async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Logged out successfully"
+    )
+  );
+});

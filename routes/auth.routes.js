@@ -1,11 +1,12 @@
 import express from "express";
 import validate from "../middleware/validate.js";
 import { loginSchema, registerSchema } from "../validators/auth.validator.js";
-import { login, register } from "../controllers/auth.controller.js";
+import { getCurrentUser, login, logout, register } from "../controllers/auth.controller.js";
 import { sendOtp } from "../controllers/auth.controller.js";
 import { sendOtpSchema } from "../validators/auth.validator.js";
 import { verifyOtp } from "../controllers/auth.controller.js";
 import { verifyOtpSchema } from "../validators/auth.validator.js";
+import protect from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -32,6 +33,9 @@ router.post(
   validate(loginSchema),
   login
 );
+
+router.get("/me", protect, getCurrentUser);
+router.post("/logout", protect, logout);
 
 export default router;
 
