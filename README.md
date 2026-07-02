@@ -19,7 +19,7 @@ Implemented a complete authentication system for the Saree Platform backend usin
 
 - OTP Generation
 - OTP Verification
-- Email Verification using Resend
+- Email Verification using Nodemailer
 - Beautiful HTML Email Template
 - OTP Expiration (5 Minutes)
 
@@ -183,11 +183,7 @@ MongoDB
 
 ## 📅 Next Milestone
 
-- Current User API (`/me`)
-- Logout API
-- Role Based Authorization
 - Admin Middleware
-- Saree CRUD APIs
 - Cloudinary Image Upload
 - Wishlist
 - Cart
