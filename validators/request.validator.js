@@ -46,9 +46,6 @@ saree: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid Saree ID"),
   requiredByDate: z.string().optional(),
 });
 
-export const updateRequestStatusSchema = createRequestSchema.extend({
-  status: z
-    .string()
-    .trim()
-    .min(2, "Status is required"),
+export const updateRequestStatusSchema = z.object({
+  status: z.enum(["accepted", "rejected"]),
 });

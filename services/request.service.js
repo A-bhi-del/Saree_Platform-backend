@@ -1,5 +1,6 @@
 import Request from "../models/Request.js";
 import { getPagination } from "../utils/pagination.js";
+import * as notificationService from "./notification.service.js";
 
 export const createRequest = async (requestData, customerId) => {
     const existingRequest = await Request.findOne({
@@ -16,6 +17,24 @@ export const createRequest = async (requestData, customerId) => {
     const request = await Request.create({
         ...requestData,
         customer: customerId,
+    });
+
+    await notificationService.createNotification({
+        sender: customerId,
+        receiver: request.admin,
+
+        type: "request",
+
+        title: "New Request",
+
+        message: `${request.designName} request received.`,
+
+        route: "/admin/requests",
+
+        data: {
+            requestId: request._id,
+            designName: request.designName,
+        },
     });
 
     return request;
@@ -86,55 +105,82 @@ export const updateRequestStatus = async (
 
     await request.save();
 
+    await notificationService.createNotification({
+        sender: adminId,
+        receiver: request.customer,
+
+        type:
+            status === "accepted"
+                ? "request-accepted"
+                : "request-rejected",
+
+        title:
+            status === "accepted"
+                ? "Request Accepted"
+                : "Request Rejected",
+
+        message:
+            status === "accepted"
+                ? `${request.designName} request has been accepted.`
+                : `${request.designName} request has been rejected.`,
+
+        route: "/requests",
+
+        data: {
+            requestId: request._id,
+            designName: request.designName,
+        },
+    });
+
     return request;
 };
 
 export const deleteCustomerRequest = async (
-  requestId,
-  customerId
+    requestId,
+    customerId
 ) => {
-  const request = await Request.findById(requestId);
+    const request = await Request.findById(requestId);
 
-  if (!request) {
-    throw new Error("Request not found");
-  }
+    if (!request) {
+        throw new Error("Request not found");
+    }
 
-  if (request.customer.toString() !== customerId.toString()) {
-    throw new Error("Unauthorized");
-  }
+    if (request.customer.toString() !== customerId.toString()) {
+        throw new Error("Unauthorized");
+    }
 
-  request.customerDeleted = true;
+    request.customerDeleted = true;
 
-  if (request.customerDeleted && request.adminDeleted) {
-    await Request.findByIdAndDelete(request._id);
-  } else {
-    await request.save();
-  }
+    if (request.customerDeleted && request.adminDeleted) {
+        await Request.findByIdAndDelete(request._id);
+    } else {
+        await request.save();
+    }
 
-  return;
+    return;
 };
 
 export const deleteAdminRequest = async (
-  requestId,
-  adminId
+    requestId,
+    adminId
 ) => {
-  const request = await Request.findById(requestId);
+    const request = await Request.findById(requestId);
 
-  if (!request) {
-    throw new Error("Request not found");
-  }
+    if (!request) {
+        throw new Error("Request not found");
+    }
 
-  if (request.admin.toString() !== adminId.toString()) {
-    throw new Error("Unauthorized");
-  }
+    if (request.admin.toString() !== adminId.toString()) {
+        throw new Error("Unauthorized");
+    }
 
-  request.adminDeleted = true;
+    request.adminDeleted = true;
 
-  if (request.customerDeleted && request.adminDeleted) {
-    await Request.findByIdAndDelete(request._id);
-  } else {
-    await request.save();
-  }
+    if (request.customerDeleted && request.adminDeleted) {
+        await Request.findByIdAndDelete(request._id);
+    } else {
+        await request.save();
+    }
 
-  return;
+    return;
 };

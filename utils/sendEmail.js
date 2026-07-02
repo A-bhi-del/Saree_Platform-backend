@@ -1,17 +1,30 @@
-import { Resend } from "resend";
-
-// console.log(process.env.RESEND_API_KEY);
+import "dotenv/config";
+import nodemailer from "nodemailer";
+const transporter = nodemailer.createTransport({
+  
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+// console.log(process.env.EMAIL_USER);
+// console.log(process.env.EMAIL_PASS);
+transporter.verify((error) => {
+  if (error) {
+    console.log("SMTP Error:", error.message);
+  } else {
+    console.log("SMTP Server Ready");
+  }
+});
 
 const sendEmail = async ({ to, subject, html }) => {
-    const resend = new Resend(process.env.RESEND_API_KEY);
-  const response = await resend.emails.send({
-    from: process.env.EMAIL_FROM,
+  await transporter.sendMail({
+    from: `"Saree Platform" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
   });
-
-  return response;
 };
 
 export default sendEmail;
