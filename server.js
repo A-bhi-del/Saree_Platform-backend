@@ -6,7 +6,7 @@ import requestRoutes from "./routes/request.routes.js";
 import cookieParser from "cookie-parser";
 import notificationRoutes from "./routes/notification.routes.js";
 import errorHandler from "./middleware/error.middleware.js";
-
+import saleRoutes from "./routes/sale.routes.js";
 
 const app = express();
 
@@ -23,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/sarees", sareeRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/sales", saleRoutes);
 
 app.use(errorHandler);
 
