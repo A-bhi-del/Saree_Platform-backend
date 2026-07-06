@@ -1,10 +1,30 @@
 import Saree from "../models/Saree.js";
 import { getPagination } from "../utils/pagination.js";
+import * as notificationService from "./notification.service.js";
+import User from "../models/User.js";
 
 export const createSaree = async (sareeData) => {
-  const newSaree = await Saree.create(sareeData);
-  return newSaree;
-};
+  const saree = await Saree.create(sareeData);
+  const followers = await favoriteService.getFollowers(saree.admin);
+
+  await Promise.all(
+    followers.map((customer) =>
+      notificationService.createNotification({
+        sender: saree.admin,
+        receiver: customer._id,
+        type: "new-saree",
+        title: "New Saree Added",
+        message: `${saree.name} has been added.`,
+        data: {
+          adminId: saree.admin,
+          sareeId: saree._id,
+        },
+      })
+    )
+  );
+
+  return saree;
+}
 
 export const getAllSarees = async (page, limit) => {
 

@@ -1,5 +1,7 @@
 import Sale from "../models/Sale.js";
 import ApiError from "../utils/ApiError.js";
+import * as notificationService from "./notification.service.js";
+import * as favoriteService from "./favorite.service.js";
 
 export const createSale = async (saleData, adminId) => {
     const today = new Date();
@@ -20,6 +22,27 @@ export const createSale = async (saleData, adminId) => {
         ...saleData,
         admin: adminId,
     });
+
+    const followers = await favoriteService.getFollowers(adminId);
+    await Promise.all(
+        followers.map((customer) =>
+            notificationService.createNotification({
+                sender: adminId,
+                receiver: customer._id,
+                type: "sale-created",
+                title: "New Sale Started",
+                message: `${sale.title} is now live.`,
+                route: "/shop",
+                data: {
+                    adminId,
+                    saleId: sale._id,
+                    title: sale.title,
+                    discountType: sale.discountType,
+                    discountValue: sale.discountValue,
+                },
+            })
+        )
+    );
 
     return sale;
 };

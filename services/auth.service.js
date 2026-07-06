@@ -8,7 +8,7 @@ import { otpTemplate } from "../utils/emailTemplates.js";
 import ApiError from "../utils/ApiError.js";
 
 export const registerUser = async (userData) => {
-  const { name, email, password, role} = userData;
+  const { name, email, password, role, address} = userData;
 
   const existingUser = await User.findOne({ email });
 
@@ -31,7 +31,8 @@ export const registerUser = async (userData) => {
     name,
     email,
     password: hashedPassword,
-    role
+    role,
+    address
   });
 
   await Otp.deleteOne({

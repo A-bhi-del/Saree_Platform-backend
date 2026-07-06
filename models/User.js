@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    address: {
+      type: String,
+      default: "",
+    },
+
     phone: {
       type: String,
       default: "",
@@ -43,12 +48,15 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    favouriteAdmins: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    favoriteAdmins: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
+      default: [],
+    },
 
     notifications: [
       {
@@ -61,6 +69,10 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.index({
+  role: 1,
+});
 
 const User = mongoose.model("User", userSchema);
 
