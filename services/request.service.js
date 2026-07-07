@@ -86,9 +86,7 @@ export const updateRequestStatus = async (
     adminId,
     status
 ) => {
-
     const request = await Request.findById(requestId);
-
     if (!request) {
         throw new Error("Request not found");
     }
@@ -107,6 +105,7 @@ export const updateRequestStatus = async (
 
     await notificationService.createNotification({
         sender: adminId,
+        
         receiver: request.customer,
 
         type:
@@ -124,7 +123,7 @@ export const updateRequestStatus = async (
                 ? `${request.designName} request has been accepted.`
                 : `${request.designName} request has been rejected.`,
 
-        route: "/requests",
+        route: "/request",
 
         data: {
             requestId: request._id,
