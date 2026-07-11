@@ -10,12 +10,29 @@ import saleRoutes from "./routes/sale.routes.js";
 import { connectRedis } from "./config/redis.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
+import helmet from "helmet";
+import cors from "cors";
+import morgan from "morgan";
 import { globalLimiter } from "./middleware/rateLimit.middleware.js";
 
 const app = express();
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+].filter(Boolean);
 
 app.use(express.json());
 app.use(globalLimiter);
+app.use(helmet());
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use(morgan("dev"));
 app.use(cookieParser());
 
 const PORT = process.env.PORT || 5000;
