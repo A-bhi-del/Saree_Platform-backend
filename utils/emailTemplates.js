@@ -7,7 +7,7 @@ export const otpTemplate = (otp) => {
           Saree Platform
         </h2>
 
-        <p>Your OTP is</p>
+        <p>Your OTP for verify your Account</p>
 
         <h1
           style="

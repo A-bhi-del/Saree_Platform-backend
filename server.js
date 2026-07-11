@@ -10,10 +10,12 @@ import saleRoutes from "./routes/sale.routes.js";
 import { connectRedis } from "./config/redis.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
+import { globalLimiter } from "./middleware/rateLimit.middleware.js";
 
 const app = express();
 
 app.use(express.json());
+app.use(globalLimiter);
 app.use(cookieParser());
 
 const PORT = process.env.PORT || 5000;
