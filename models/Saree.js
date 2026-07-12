@@ -73,6 +73,20 @@ const sareeSchema = new mongoose.Schema(
   }
 );
 
+sareeSchema.index({ category: 1 });
+
+sareeSchema.index({ fabric: 1 });
+
+sareeSchema.index({ color: 1 });
+
+sareeSchema.index({ price: 1 });
+
+sareeSchema.index({ admin: 1 });
+
+sareeSchema.index({ createdAt: -1 });
+
+sareeSchema.index({ isAvailable: 1 });
+
 const Saree = mongoose.model("Saree", sareeSchema);
 
 export default Saree;

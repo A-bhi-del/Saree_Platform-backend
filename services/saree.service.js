@@ -4,6 +4,8 @@ import { getPagination } from "../utils/pagination.js";
 import * as notificationService from "./notification.service.js";
 import * as favoriteService from "./favorite.service.js";
 import { deleteCache } from "../utils/cache.js";
+import { buildSortQuery } from "../utils/buildSortQuery.js";
+import { buildSareeQuery } from "../utils/buildSareeQuery.js";
 
 export const createSaree = async (sareeData) => {
   const saree = await Saree.create(sareeData);
@@ -33,28 +35,31 @@ export const createSaree = async (sareeData) => {
   return saree;
 };
 
-export const getAllSarees = async (page, limit) => {
+export const getAllSarees = async (filters) => {
+  const { page, limit, sort } = filters;
+
   const {
     skip,
     page: currentPage,
     limit: perPage,
   } = getPagination(page, limit);
 
+  const query = buildSareeQuery(filters);
+
+  const sortQuery = buildSortQuery(sort);
+
   const [sarees, total] = await Promise.all([
-    Saree.find()
-      .populate(
-        "admin",
-        "name email profileImage"
-      )
+    Saree.find(query)
+      .populate("admin", "name email profileImage")
+      .sort(sortQuery)
       .skip(skip)
       .limit(perPage),
 
-    Saree.countDocuments(),
+    Saree.countDocuments(query),
   ]);
 
   return {
     sarees,
-
     pagination: {
       page: currentPage,
       limit: perPage,
