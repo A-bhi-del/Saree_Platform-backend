@@ -78,7 +78,11 @@ const requestSchema = new mongoose.Schema({
         enum: ["pending", "accepted", "rejected"],
         default: "pending",
     },
-});
+},
+    {
+        timestamps: true
+    }
+);
 
 const Request = mongoose.model("Request", requestSchema);
 export default Request;

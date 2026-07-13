@@ -47,7 +47,7 @@ const saleSchema = new mongoose.Schema(
   }
 );
 
-saleSchema.index({ admin: 1, isActive: 1 });
+saleSchema.index({ admin: 1 });
 
 const Sale = mongoose.model("Sale", saleSchema);
 
