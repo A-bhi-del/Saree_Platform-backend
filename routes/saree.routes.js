@@ -19,6 +19,12 @@ router.get(
 );
 
 router.get(
+  "/:id/related",
+  validate(mongoIdSchema, "params"),
+  sareeController.getRelatedSarees
+);
+
+router.get(
   "/:id",
   validate(mongoIdSchema, "params"),
   sareeController.getSareeById

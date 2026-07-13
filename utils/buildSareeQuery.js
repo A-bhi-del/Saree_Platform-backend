@@ -1,4 +1,13 @@
-export const buildSareeQuery = (filters) => {
+import {
+  buildAvailabilityQuery,
+  buildMultiValueQuery,
+  buildPriceQuery,
+  buildSearchQuery,
+} from "./queryHelpers.js";
+
+export const buildSareeQuery = (
+  filters
+) => {
   const {
     search,
     category,
@@ -11,70 +20,34 @@ export const buildSareeQuery = (filters) => {
     admin,
   } = filters;
 
-  const query = {};
+  return {
+    ...buildSearchQuery(search),
 
-  // Search
-  if (search) {
-    query.$or = [
-      {
-        name: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        description: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-    ];
-  }
+    ...buildPriceQuery(
+      minPrice,
+      maxPrice
+    ),
 
-  // Category
-  if (category) {
-    query.category = category;
-  }
+    ...buildAvailabilityQuery(
+      available,
+      inStock
+    ),
 
-  // Fabric
-  if (fabric) {
-    query.fabric = fabric;
-  }
+    ...buildMultiValueQuery(
+      "category",
+      category
+    ),
 
-  // Color
-  if (color) {
-    query.color = color;
-  }
+    ...buildMultiValueQuery(
+      "fabric",
+      fabric
+    ),
 
-  // Price
-  if (minPrice || maxPrice) {
-    query.price = {};
+    ...buildMultiValueQuery(
+      "color",
+      color
+    ),
 
-    if (minPrice) {
-      query.price.$gte = Number(minPrice);
-    }
-
-    if (maxPrice) {
-      query.price.$lte = Number(maxPrice);
-    }
-  }
-
-  // Availability
-  if (available !== undefined) {
-    query.isAvailable = available === "true";
-  }
-
-  // Stock
-  if (inStock === "true") {
-    query.stock = {
-      $gt: 0,
-    };
-  }
-
-  // Admin
-  if (admin) {
-    query.admin = admin;
-  }
-
-  return query;
+    ...(admin && { admin }),
+  };
 };

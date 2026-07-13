@@ -31,6 +31,26 @@ export const getAllSarees = async (req, res, next) => {
   }
 };
 
+export const getRelatedSarees = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const sarees =
+      await sareeService.getRelatedSarees(
+        req.params.id
+      );
+
+    res.status(200).json({
+      success: true,
+      data: sarees,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getSareeById = async (req, res, next) => {
   try {
     const saree = await sareeService.getSareeByID(req.params.id);

@@ -69,6 +69,44 @@ export const getAllSarees = async (filters) => {
   };
 };
 
+export const getRelatedSarees = async (
+  sareeId
+) => {
+  const saree = await Saree.findById(sareeId);
+
+  if (!saree) {
+    throw new ApiError(
+      404,
+      "Saree not found"
+    );
+  }
+
+  const related = await Saree.find({
+    _id: {
+      $ne: saree._id,
+    },
+
+    isAvailable: true,
+
+    $or: [
+      {
+        category: saree.category,
+      },
+      {
+        fabric: saree.fabric,
+      },
+    ],
+  })
+    .populate(
+      "admin",
+      "name profileImage"
+    )
+    .limit(8)
+    .lean();
+
+  return related;
+};
+
 export const getSareeByID = async (id) => {
   const saree = await Saree.findById(id).populate(
     "admin",
