@@ -2,8 +2,10 @@ import * as dashboardService from "../services/dashboard.service.js";
 
 export const getDashboard = async (req, res, next) => {
   try {
+    const year = Number(req.query.year) || new Date().getFullYear();
     const dashboard = await dashboardService.getDashboard(
-      req.user._id
+      req.user._id,
+      year
     );
 
     res.status(200).json({
