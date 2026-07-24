@@ -96,26 +96,28 @@ export const verifyOtpService = async ({ email, otp }) => {
   );
 };
 
-export const loginUser = async ({ email, password }) => {
+export const loginUser = async ({ email, password, role }) => {
   const user = await User.findOne({ email });
 
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  const isPasswordCorrect = await bcrypt.compare(
-    password,
-    user.password
-  );
+  if (role && user.role !== role) {
+    throw new ApiError(
+      403,
+      `Access Denied! Account is registered as ${user.role.toUpperCase()}.`
+    );
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
   if (!isPasswordCorrect) {
     throw new ApiError(401, "Invalid Credentials");
   }
 
   const token = generateToken(user);
-
   const userResponse = user.toObject();
-
   delete userResponse.password;
 
   return {
