@@ -36,24 +36,23 @@ export const createSaree = async (sareeData) => {
 };
 
 export const getAllSarees = async (filters) => {
-  const { page, limit, sort } = filters;
+  const { page, limit, sort, admin } = filters;
 
-  const {
-    skip,
-    page: currentPage,
-    limit: perPage,
-  } = getPagination(page, limit);
+  const { skip, page: currentPage, limit: perPage } = getPagination(page, limit);
 
-  const query = buildSareeQuery(filters);
+  let query = buildSareeQuery(filters);
 
-  const sortQuery = buildSortQuery(sort);
+  if (admin) {
+    query.admin = admin;
+  }
 
   const [sarees, total] = await Promise.all([
     Saree.find(query)
       .populate("admin", "name email profileImage")
-      .sort(sortQuery)
+      .sort(buildSortQuery(sort))
       .skip(skip)
-      .limit(perPage),
+      .limit(perPage)
+      .lean(),
 
     Saree.countDocuments(query),
   ]);

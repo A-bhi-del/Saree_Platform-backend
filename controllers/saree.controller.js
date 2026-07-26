@@ -1,9 +1,12 @@
 import * as sareeService from "../services/saree.service.js";
+import { createSareeSchema, updateSareeSchema } from "../validators/saree.validator.js";
 
 export const createSaree = async (req, res, next) => {
   try {
+    const validatedData = createSareeSchema.parse(req.body);
+
     const saree = await sareeService.createSaree({
-      ...req.body,
+      ...validatedData,
       admin: req.user._id,
     });
 
@@ -17,9 +20,35 @@ export const createSaree = async (req, res, next) => {
   }
 };
 
+export const updateSaree = async (req, res, next) => {
+  try {
+    const validatedData = updateSareeSchema.parse(req.body);
+
+    const saree = await sareeService.updateSaree(
+      req.params.id,
+      req.user._id,
+      validatedData
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Saree updated successfully",
+      data: saree,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAllSarees = async (req, res, next) => {
   try {
-    const result = await sareeService.getAllSarees(req.query);
+    const filters = { ...req.query };
+
+    if (req.user.role === "admin") {
+      filters.admin = req.user._id;
+    }
+
+    const result = await sareeService.getAllSarees(filters);
 
     res.status(200).json({
       success: true,
@@ -64,23 +93,6 @@ export const getSareeById = async (req, res, next) => {
   }
 };
 
-export const updateSaree = async (req, res, next) => {
-  try {
-    const saree = await sareeService.updateSaree(
-      req.params.id,
-      req.user._id,
-      req.body
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Saree updated successfully",
-      data: saree,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 export const deleteSaree = async (req, res, next) => {
   try {

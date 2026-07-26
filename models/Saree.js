@@ -90,3 +90,4 @@ sareeSchema.index({ isAvailable: 1 });
 const Saree = mongoose.model("Saree", sareeSchema);
 
 export default Saree;
+

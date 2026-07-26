@@ -14,6 +14,7 @@ const router = express.Router();
 
 router.get(
   "/",
+  protect,
   validate(searchSareeSchema, "query"),
   sareeController.getAllSarees
 );

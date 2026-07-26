@@ -44,7 +44,7 @@ export const createSareeSchema = z.object({
     .optional(),
 
   images: z
-    .array(z.string().url("Invalid image URL"))
+    .array(z.string())
     .optional(),
 });
 
