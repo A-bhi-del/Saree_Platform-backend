@@ -8,7 +8,7 @@ import { otpTemplate } from "../utils/emailTemplates.js";
 import ApiError from "../utils/ApiError.js";
 
 export const registerUser = async (userData) => {
-  const { name, email, password, role, address} = userData;
+  const { name, email, password, role, address } = userData;
 
   const existingUser = await User.findOne({ email });
 
@@ -32,7 +32,7 @@ export const registerUser = async (userData) => {
     email,
     password: hashedPassword,
     role,
-    address
+    address,
   });
 
   await Otp.deleteOne({
@@ -41,7 +41,6 @@ export const registerUser = async (userData) => {
   });
 
   const userResponse = user.toObject();
-
   delete userResponse.password;
 
   return userResponse;
@@ -117,6 +116,7 @@ export const loginUser = async ({ email, password, role }) => {
   }
 
   const token = generateToken(user);
+
   const userResponse = user.toObject();
   delete userResponse.password;
 
@@ -124,4 +124,21 @@ export const loginUser = async ({ email, password, role }) => {
     user: userResponse,
     token,
   };
+};
+
+export const updatedProfile = async (userId, updateData) => {
+  const user = await User.findByIdAndUpdate(
+    userId,
+    updateData,
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).select("-password");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return user;
 };

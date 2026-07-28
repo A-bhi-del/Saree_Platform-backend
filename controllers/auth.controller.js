@@ -1,10 +1,12 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
-import { loginUser } from "../services/auth.service.js";
+
 import {
+  loginUser,
   registerUser,
   sendOtpService,
   verifyOtpService,
+  updatedProfile,
 } from "../services/auth.service.js";
 
 export const register = asyncHandler(async (req, res) => {
@@ -46,7 +48,7 @@ export const login = asyncHandler(async (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: false, 
+    secure: false,
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -54,7 +56,7 @@ export const login = asyncHandler(async (req, res) => {
   return res.status(200).json(
     new ApiResponse(
       200,
-      { user, token },
+      { user },
       "Login successful"
     )
   );
@@ -64,8 +66,8 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
   return res.status(200).json(
     new ApiResponse(
       200,
-      "Current user fetched successfully",
-      req.user
+      req.user,
+      "Current user fetched successfully"
     )
   );
 });
@@ -80,7 +82,42 @@ export const logout = asyncHandler(async (req, res) => {
   return res.status(200).json(
     new ApiResponse(
       200,
+      null,
       "Logged out successfully"
+    )
+  );
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const role = req.user.role;
+
+  const {
+    name,
+    phone,
+    address,
+    profileImage,
+    shopName,
+  } = req.body;
+
+  const updateData = {
+    name,
+    phone,
+    address,
+    profileImage,
+  };
+
+  if (role === "admin" && shopName !== undefined) {
+    updateData.shopName = shopName;
+  }
+
+  const user = await updatedProfile(userId, updateData);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      user,
+      "Profile updated successfully"
     )
   );
 });

@@ -41,3 +41,30 @@ export const loginSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters"),
 });
+
+
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(3).max(50),
+
+  shopName: z
+    .string()
+    .trim()
+    .min(3)
+    .max(100)
+    .optional(),
+
+  phone: z
+    .string()
+    .regex(/^[6-9]\d{9}$/, "Invalid phone number"),
+
+  address: z
+    .string()
+    .trim()
+    .min(5)
+    .max(200),
+
+  profileImage: z
+    .string()
+    .url()
+    .optional(),
+});
