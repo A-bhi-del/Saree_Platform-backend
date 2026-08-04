@@ -13,6 +13,11 @@ router.post(
 );
 
 router.get(
+  "/active",
+  saleController.getActiveSales
+);
+
+router.get(
   "/",
   protect,
   authorize("admin"),

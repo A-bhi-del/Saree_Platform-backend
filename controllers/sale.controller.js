@@ -74,3 +74,16 @@ export const deleteSale = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getActiveSales = async (req, res, next) => {
+  try {
+    const sales = await saleService.getActiveSales();
+
+    res.status(200).json({
+      success: true,
+      data: sales,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -113,3 +113,20 @@ export const deleteSale = async (
 
   await deleteCache(`shop:${adminId}`);
 };
+
+export const getActiveSales = async () => {
+  const today = new Date();
+
+  const sales = await Sale.find(
+    {
+      startDate: { $lte: today },
+      endDate: { $gte: today },
+    },
+    "title description discountType discountValue startDate endDate admin"
+  )
+    .populate("admin", "shopName profileImage")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return sales;
+};
