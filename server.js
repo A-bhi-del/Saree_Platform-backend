@@ -10,6 +10,7 @@ import saleRoutes from "./routes/sale.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import { connectRedis } from "./config/redis.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
+import favoriteSareeRoutes from "./routes/favoriteSaree.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
 import helmet from "helmet";
 import cors from "cors";
@@ -50,7 +51,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/sales", saleRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/shops", shopRoutes);
-
+app.use("/api/favorite-sarees", favoriteSareeRoutes);
 app.use(errorHandler);
 
 const startServer = async () => {

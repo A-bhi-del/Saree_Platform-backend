@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    shopName :{
+
+    shopName: {
       type: String,
       default: "",
     },
@@ -52,6 +53,13 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    favoriteSarees: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Saree",
+      },
+    ],
+    
     favoriteAdmins: {
       type: [
         {

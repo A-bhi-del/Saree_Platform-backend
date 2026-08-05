@@ -27,6 +27,7 @@ export const createRequest = async (req, res, next) => {
 export const getRequests = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
+    // console.log(req.user);
 
     const result = await requestService.getRequests(
       req.user,
