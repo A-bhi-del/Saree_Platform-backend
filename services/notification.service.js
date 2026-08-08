@@ -20,7 +20,12 @@ export const getNotifications = async (
   const [notifications, total] = await Promise.all([
 
     Notification.find({
-      receiver: userId,
+      $or: [
+        { receiver: userId },
+        { type: "sale" },
+        { type: "new-saree" },
+        { type: "Discount Updated" },
+      ],
     })
       .populate("sender", "name profileImage role")
       .sort({ createdAt: -1 })
@@ -28,8 +33,13 @@ export const getNotifications = async (
       .limit(perPage),
 
     Notification.countDocuments({
-      receiver: userId,
-    }),
+      $or: [
+        { receiver: userId },
+        { type: "sale" },
+        { type: "new-saree" },
+        { type: "Discount Updated" },
+      ],
+    })
 
   ]);
 
@@ -54,10 +64,6 @@ export const markAsRead = async (
 
   if (!notification) {
     throw new Error("Notification not found");
-  }
-
-  if (notification.receiver.toString() !== userId.toString()) {
-    throw new Error("Unauthorized");
   }
 
   notification.isRead = true;
@@ -90,10 +96,6 @@ export const deleteNotification = async (
 
   if (!notification) {
     throw new Error("Notification not found");
-  }
-
-  if (notification.receiver.toString() !== userId.toString()) {
-    throw new Error("Unauthorized");
   }
 
   await Notification.findByIdAndDelete(notificationId);

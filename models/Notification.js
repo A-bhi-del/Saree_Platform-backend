@@ -11,6 +11,7 @@ const notificationSchema = new mongoose.Schema(
         "request-rejected",
         "sale",
         "general",
+        "Discount Updated",
       ],
       required: true,
     },
@@ -24,7 +25,6 @@ const notificationSchema = new mongoose.Schema(
     receiver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
 
     title: {

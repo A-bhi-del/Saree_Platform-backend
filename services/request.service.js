@@ -29,7 +29,7 @@ export const createRequest = async (requestData, customerId) => {
 
         message: `${request.designName} request received.`,
 
-        route: "/admin/requests",
+        route: "/request",
 
         data: {
             requestId: request._id,
@@ -115,15 +115,15 @@ export const updateRequestStatus = async (
 
         title:
             status === "accepted"
-                ? "Request Accepted"
-                : "Request Rejected",
+                ? "Your Request Accepted"
+                : "Your Request Rejected",
 
         message:
             status === "accepted"
                 ? `${request.designName} request has been accepted.`
                 : `${request.designName} request has been rejected.`,
 
-        route: "/request",
+        route: "/customer",
 
         data: {
             requestId: request._id,

@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import * as notificationService from "./notification.service.js";
 import * as favoriteService from "./favorite.service.js";
 import { deleteCache } from "../utils/cache.js";
+import User from "../models/User.js";
 
 export const createSale = async (saleData, adminId) => {
   const existingSale = await Sale.findOne({
@@ -23,23 +24,17 @@ export const createSale = async (saleData, adminId) => {
     admin: adminId,
   });
 
-  const followers = await favoriteService.getFollowers(adminId);
-
-  await Promise.all(
-    followers.map((customer) =>
-      notificationService.createNotification({
-        sender: adminId,
-        receiver: customer._id,
-        type: "sale-created",
-        title: "New Sale Started",
-        message: `${sale.title} is now live.`,
-        data: {
-          adminId,
-          saleId: sale._id,
-        },
-      })
-    )
-  );
+  notificationService.createNotification({
+    sender: adminId,
+    type: "sale",
+    title: "New Sale Started",
+    message: `${sale.title} is now live.`,
+    route: "/sarees",
+    data: {
+      adminId,
+      saleId: sale._id,
+    },
+  })
 
   await deleteCache(`shop:${adminId}`);
 
@@ -47,7 +42,7 @@ export const createSale = async (saleData, adminId) => {
 };
 
 export const getMySale = async (adminId) => {
-  const sale = await Sale.findOne({
+  const sale = await Sale.find({
     admin: adminId,
   });
 

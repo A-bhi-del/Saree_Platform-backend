@@ -6,29 +6,22 @@ import * as favoriteService from "./favorite.service.js";
 import { deleteCache } from "../utils/cache.js";
 import { buildSortQuery } from "../utils/buildSortQuery.js";
 import { buildSareeQuery } from "../utils/buildSareeQuery.js";
+import User from "../models/User.js";
 
 export const createSaree = async (sareeData) => {
   const saree = await Saree.create(sareeData);
 
-  const followers = await favoriteService.getFollowers(
-    saree.admin
-  );
-
-  await Promise.all(
-    followers.map((customer) =>
-      notificationService.createNotification({
-        sender: saree.admin,
-        receiver: customer._id,
-        type: "new-saree",
-        title: "New Saree Added",
-        message: `${saree.name} has been added.`,
-        data: {
-          adminId: saree.admin,
-          sareeId: saree._id,
-        },
-      })
-    )
-  );
+  notificationService.createNotification({
+    sender: saree.admin,
+    type: "new-saree",
+    title: "New Saree Added",
+    message: `${saree.name} has been added.`,
+    route: "/sarees",
+    data: {
+      adminId: saree.admin,
+      sareeId: saree._id,
+    },
+  })
 
   await deleteCache(`shop:${saree.admin}`);
 
@@ -158,6 +151,20 @@ export const updateSaree = async (
 
   await deleteCache(`shop:${userId}`);
 
+  if (updatedSaree.discountPercentage !== saree.discountPercentage) {
+      notificationService.createNotification({
+        sender: saree.admin,
+        type: "Discount Updated",
+        title: "Something about saree has been updated",
+        message: `${saree.name} has been updated.`,
+        route: "/sarees",
+        data: {
+          adminId: saree.admin,
+          sareeId: saree._id,
+        },
+      })
+  }
+
   return updatedSaree;
 };
 
@@ -191,3 +198,4 @@ export const deleteSaree = async (
 
   return deletedSaree;
 };
+
