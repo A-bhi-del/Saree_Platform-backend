@@ -63,6 +63,11 @@ const sareeSchema = new mongoose.Schema(
       },
     ],
 
+    like:{
+      type: Number,
+      default: 0
+    },
+    
     isAvailable: {
       type: Boolean,
       default: true,

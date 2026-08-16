@@ -11,15 +11,6 @@ export const getShopDetails = async (adminId, customerId) => {
 
     const cachedShop = await getCache(cacheKey);
 
-    // if (cachedShop) {
-    //     console.log("✅ Redis Cache Hit");
-    //     return {
-    //         ...cachedShop,
-    //         isFavorite,
-    //     };
-    // }
-    // console.log("❌ Redis Cache Miss");
-
     const customer = await User.findById(customerId).select(
         "favoriteAdmins"
     );

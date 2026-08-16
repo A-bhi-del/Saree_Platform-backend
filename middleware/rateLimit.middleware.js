@@ -1,45 +1,32 @@
-import { rateLimit } from "express-rate-limit";
+import { DEFAULT_RATE } from "../config/rates.js";
+import {redis} from "../config/redis.js";
+import  asyncHandler  from "../utils/asyncHandler.js";
 
-export const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many requests. Please try again later.",
-  },
-});
+const rateLimiter = ({ Limit, WindowSeconds } = DEFAULT_RATE) => {
+    return asyncHandler(async (req, res, next) => {
+        const ip = req.ip;
+        const userId = req.user?._id;
 
-export const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many login attempts. Please try again later.",
-  },
-});
+        let key = userId ? `userId:${userId}` : `ip:${ip}`;
+        key += `${req.originalUrl.split("?")[0]}`;
 
-export const otpLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many OTP requests. Please try again later.",
-  },
-});
+        const count = await redis.incr(key);
 
-export const registerLimiter = rateLimit({
-  windowMs: 30 * 60 * 1000,
-  max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many registration attempts. Please try again later.",
-  },
-});
+        const ttl = await redis.ttl(key);
+
+        if (ttl === -1) {
+            await redis.expire(key, WindowSeconds);
+        }
+        // console.log("TTL:", ttl);
+
+        if (count > Limit) {
+            return res.status(429).json({
+                success: false,
+                message: "Too many requests, please try again later"
+            })
+        }
+        next();
+    });
+}
+
+export default rateLimiter;

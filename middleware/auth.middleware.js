@@ -4,11 +4,7 @@ import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const protect = asyncHandler(async (req, res, next) => {
-  
   const token = req.cookies.token;
-//   console.log("Cookies:", req.cookies);
-// console.log("Token:", req.cookies.token);
-
   if (!token) {
     throw new ApiError(401, "Unauthorized. Please login.");
   }

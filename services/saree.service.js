@@ -152,17 +152,17 @@ export const updateSaree = async (
   await deleteCache(`shop:${userId}`);
 
   if (updatedSaree.discountPercentage !== saree.discountPercentage) {
-      notificationService.createNotification({
-        sender: saree.admin,
-        type: "Discount Updated",
-        title: "Something about saree has been updated",
-        message: `${saree.name} has been updated.`,
-        route: "/sarees",
-        data: {
-          adminId: saree.admin,
-          sareeId: saree._id,
-        },
-      })
+    notificationService.createNotification({
+      sender: saree.admin,
+      type: "Discount Updated",
+      title: "Something about saree has been updated",
+      message: `${saree.name} has been updated.`,
+      route: "/sarees",
+      data: {
+        adminId: saree.admin,
+        sareeId: saree._id,
+      },
+    })
   }
 
   return updatedSaree;

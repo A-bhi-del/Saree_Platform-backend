@@ -7,38 +7,35 @@ import { sendOtpSchema } from "../validators/auth.validator.js";
 import { verifyOtp } from "../controllers/auth.controller.js";
 import { verifyOtpSchema } from "../validators/auth.validator.js";
 import protect from "../middleware/auth.middleware.js";
-import {
-  loginLimiter,
-  otpLimiter,
-  registerLimiter,
-} from "../middleware/rateLimit.middleware.js";
+import rateLimiter from "../middleware/rateLimit.middleware.js";
+import { DEFAULT_RATE } from "../config/rates.js";
 
 const router = express.Router();
 
 router.post(
   "/send-otp",
-  otpLimiter,
+  rateLimiter(DEFAULT_RATE),
   validate(sendOtpSchema),
   sendOtp
 );
 
 router.post(
   "/verify-otp",
-  otpLimiter,
+  rateLimiter(DEFAULT_RATE),
   validate(verifyOtpSchema),
   verifyOtp
 );
 
 router.post(
   "/register",
-  registerLimiter,
+  rateLimiter(DEFAULT_RATE),
   validate(registerSchema),
   register
 );
 
 router.post(
   "/login",
-  loginLimiter,
+  rateLimiter(DEFAULT_RATE),
   validate(loginSchema),
   login
 );

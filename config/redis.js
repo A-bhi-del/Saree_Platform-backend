@@ -1,21 +1,23 @@
 import { createClient } from "redis";
+import { RedisUrl } from "./constans.js";
 
-// console.log(process.env.REDIS_URL);
-const redisClient = createClient({
-  
-  url: process.env.REDIS_URL,
-});
+export const redis = createClient({
+    url: RedisUrl,
+})
 
-redisClient.on("connect", () => {
-  console.log("Redis Connected 🚀");
-});
-
-redisClient.on("error", (err) => {
-  console.error("Redis Error:", err);
-}); 
+redis.on("error", (error) => {
+    console.error("Redis Client Issue", error);
+})
 
 export const connectRedis = async () => {
-  await redisClient.connect();
-};
+    try {
+        if (!redis.isOpen) {
+            await redis.connect();
+        }
+        console.log("Redis connected");
+    } catch (err) {
+        console.error("Error in connection with Redis", error);
+        throw error;
+    }
+}
 
-export default redisClient;

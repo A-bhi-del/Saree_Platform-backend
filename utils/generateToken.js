@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { JWT_EXPIRES_IN, JWT_SECRET } from "../config/constans.js";
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -6,9 +7,9 @@ const generateToken = (user) => {
       id: user._id,
       role: user.role
     },
-    process.env.JWT_SECRET,
+    JWT_SECRET,
     {
-      expiresIn: process.env.JWT_EXPIRES_IN,
+      expiresIn: JWT_EXPIRES_IN,
     }
   );
 };

@@ -9,11 +9,10 @@ import ApiError from "../utils/ApiError.js";
 
 export const registerUser = async (userData) => {
   const { name, email, password, role, address } = userData;
-
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
-    throw new ApiError(409, "User already exists");
+      throw new ApiError(409, "User already exists");
   }
 
   const otpDoc = await Otp.findOne({
@@ -22,7 +21,7 @@ export const registerUser = async (userData) => {
   });
 
   if (!otpDoc) {
-    throw new ApiError(400, "Please verify your email first");
+      throw new ApiError(400, "Please verify your email first");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -60,7 +59,7 @@ export const sendOtpService = async ({ email }) => {
   await Otp.create({
     email,
     otp,
-    expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    expiresAt: new Date(Date.now() + 60 * 1000),
   });
 
   await sendEmail({

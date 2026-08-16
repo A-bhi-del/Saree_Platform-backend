@@ -1,15 +1,15 @@
 import "dotenv/config";
 import nodemailer from "nodemailer";
+import { EMAIL_PASS, EMAIL_USER } from "../config/constans.js";
 const transporter = nodemailer.createTransport({
   
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
   },
 });
-// console.log(process.env.EMAIL_USER);
-// console.log(process.env.EMAIL_PASS);
+
 transporter.verify((error) => {
   if (error) {
     console.log("SMTP Error:", error.message);
@@ -20,7 +20,7 @@ transporter.verify((error) => {
 
 const sendEmail = async ({ to, subject, html }) => {
   await transporter.sendMail({
-    from: `"Saree Platform" <${process.env.EMAIL_USER}>`,
+    from: `"Saree Platform" <${EMAIL_USER}>`,
     to,
     subject,
     html,

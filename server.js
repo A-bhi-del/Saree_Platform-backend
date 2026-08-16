@@ -8,23 +8,22 @@ import notificationRoutes from "./routes/notification.routes.js";
 import errorHandler from "./middleware/error.middleware.js";
 import saleRoutes from "./routes/sale.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
-import { connectRedis } from "./config/redis.js";
+import {connectRedis} from "./config/redis.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
 import favoriteSareeRoutes from "./routes/favoriteSaree.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
-import { globalLimiter } from "./middleware/rateLimit.middleware.js";
+import { CLIENT_URL } from "./config/constans.js";
 
 const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.CLIENT_URL,
+  CLIENT_URL,
 ].filter(Boolean);
 
 app.use(express.json());
-app.use(globalLimiter);
 app.use(helmet());
 app.use(
   cors({
