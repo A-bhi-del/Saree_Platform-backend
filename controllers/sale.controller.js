@@ -1,89 +1,83 @@
 import * as saleService from "../services/sale.service.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 import {
     createSaleSchema,
     updateSaleSchema,
 } from "../validators/sale.validator.js";
 
-export const createSale = async (req, res, next) => {
-    try {
-        const validatedData = createSaleSchema.parse(req.body);
+export const createSale = asyncHandler(async (req, res, next) => {
+    const validatedData = createSaleSchema.parse(req.body);
 
-        const sale = await saleService.createSale(
-            validatedData,
-            req.user._id
-        );
+    const sale = await saleService.createSale(
+        validatedData,
+        req.user._id
+    );
 
-        res.status(201).json({
-            success: true,
-            message: "Sale created successfully",
-            data: sale,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+    return res.status(201).json(
+        new ApiResponse(
+            200,
+            "Sale created successfully",
+            sale
+        )
+    );
+})
 
-export const getMySale = async (req, res, next) => {
-    try {
-        const sale = await saleService.getMySale(
-            req.user._id
-        );
+export const getMySale = asyncHandler(async (req, res, next) => {
+    const sale = await saleService.getMySale(
+        req.user._id
+    );
 
-        res.status(200).json({
-            success: true,
-            data: sale,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Sale fetched successfully",
+            sale
+        )
+    );
+})
 
-export const updateSale = async (req, res, next) => {
-    try {
-        const validatedData = updateSaleSchema.parse(req.body);
+export const updateSale = asyncHandler(async (req, res, next) => {
+    const validatedData = updateSaleSchema.parse(req.body);
 
-        const sale = await saleService.updateSale(
-            req.params.id,
-            req.user._id,
-            validatedData
-        );
+    const sale = await saleService.updateSale(
+        req.params.id,
+        req.user._id,
+        validatedData
+    );
 
-        res.status(200).json({
-            success: true,
-            message: "Sale updated successfully",
-            data: sale,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Sale updated successfully",
+            sale
+        )
+    );
+})
 
-export const deleteSale = async (req, res, next) => {
-    try {
-        await saleService.deleteSale(
-            req.params.id,
-            req.user._id
-        );
+export const deleteSale = asyncHandler(async (req, res, next) => {
+    await saleService.deleteSale(
+        req.params.id,
+        req.user._id
+    );
 
-        res.status(200).json({
-            success: true,
-            message: "Sale deleted successfully",
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Sale deleted successfully"
+        )
+    );
+})
 
-export const getActiveSales = async (req, res, next) => {
-  try {
+export const getActiveSales = asyncHandler(async (req, res, next) => {
     const sales = await saleService.getActiveSales();
 
-    res.status(200).json({
-      success: true,
-      data: sales,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Sales fetched successfully",
+            sales
+        )
+    );
+})
