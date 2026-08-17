@@ -1,98 +1,88 @@
 import * as requestService from "../services/request.service.js";
-
+import ApiResponse from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import {
   createRequestSchema,
   updateRequestStatusSchema,
 } from "../validators/request.validator.js";
 
-export const createRequest = async (req, res, next) => {
-  try {
-    const validatedData = createRequestSchema.parse(req.body);
+export const createRequest = asyncHandler(async (req, res, next) => {
+  const validatedData = createRequestSchema.parse(req.body);
 
-    const request = await requestService.createRequest(
-      validatedData,
-      req.user._id
-    );
+  const request = await requestService.createRequest(
+    validatedData,
+    req.user._id
+  );
 
-    res.status(201).json({
-      success: true,
-      message: "Request created successfully",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(201).json(
+    new ApiResponse(
+      200,
+      "Request created successfully",
+      request
+    )
+  );
+})
 
-export const getRequests = async (req, res, next) => {
-  try {
-    const { page, limit } = req.query;
-    // console.log(req.user);
+export const getRequests = asyncHandler(async (req, res, next) => {
+  const { page, limit } = req.query;
+  const result = await requestService.getRequests(
+    req.user,
+    page,
+    limit
+  );
 
-    const result = await requestService.getRequests(
-      req.user,
-      page,
-      limit
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Requests fetched successfully",
+      result.requests,
+      result.pagination
+    )
+  );
+})
 
-    res.status(200).json({
-      success: true,
-      data: result.requests,
-      pagination: result.pagination,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+export const updateRequestStatus = asyncHandler(async (req, res, next) => {
+  const { status } = updateRequestStatusSchema.parse(req.body);
 
-export const updateRequestStatus = async (req, res, next) => {
-  try {
-    const { status } = updateRequestStatusSchema.parse(req.body);
+  const request = await requestService.updateRequestStatus(
+    req.params.id,
+    req.user._id,
+    status
+  );
 
-    const request = await requestService.updateRequestStatus(
-      req.params.id,
-      req.user._id,
-      status
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Request status updated successfully",
+      request
+    )
+  );
+})
 
-    res.status(200).json({
-      success: true,
-      message: "Request status updated successfully",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+export const deleteCustomerRequest = asyncHandler(async (req, res, next) => {
+  await requestService.deleteCustomerRequest(
+    req.params.id,
+    req.user._id
+  );
 
-export const deleteCustomerRequest = async (req, res, next) => {
-  try {
-    await requestService.deleteCustomerRequest(
-      req.params.id,
-      req.user._id
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Request deleted successfully"
+    )
+  );
+})
 
-    res.status(200).json({
-      success: true,
-      message: "Request deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+export const deleteAdminRequest = asyncHandler(async (req, res, next) => {
+  await requestService.deleteAdminRequest(
+    req.params.id,
+    req.user._id
+  );
 
-export const deleteAdminRequest = async (req, res, next) => {
-  try {
-    await requestService.deleteAdminRequest(
-      req.params.id,
-      req.user._id
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Request deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Request deleted successfully"
+    )
+  );
+})
