@@ -1,63 +1,48 @@
 import * as favoriteSareeService from "../services/favoriteSaree.service.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-export const addToFavoriteSarees = async (
-  req,
-  res,
-  next
-) => {
-  try {
-    const result =
-      await favoriteSareeService.addToFavoriteSarees(
-        req.user._id,
-        req.params.id
-      );
+export const addToFavoriteSarees = asyncHandler(async (req, res, next) => {
+  const result =
+    await favoriteSareeService.addToFavoriteSarees(
+      req.user._id,
+      req.params.id
+    );
 
-    res.status(200).json({
-      success: true,
-      message: result.message,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      result.message
+    )
+  );
+})
 
-export const removeFromFavoriteSarees = async (
-  req,
-  res,
-  next
-) => {
-  try {
-    const result =
-      await favoriteSareeService.removeFromFavoriteSarees(
-        req.user._id,
-        req.params.id
-      );
+export const removeFromFavoriteSarees = asyncHandler(async (req, res, next) => {
+  const result =
+    await favoriteSareeService.removeFromFavoriteSarees(
+      req.user._id,
+      req.params.id
+    );
 
-    res.status(200).json({
-      success: true,
-      message: result.message,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      result.message
+    )
+  );
+})
 
-export const getFavoriteSarees = async (
-  req,
-  res,
-  next
-) => {
-  try {
-    const favorites =
-      await favoriteSareeService.getFavoriteSarees(
-        req.user._id
-      );
+export const getFavoriteSarees = asyncHandler(async (req, res, next) => {
+  const favorites =
+    await favoriteSareeService.getFavoriteSarees(
+      req.user._id
+    );
 
-    res.status(200).json({
-      success: true,
-      data: favorites,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Favorites fetched successfully",
+      favorites
+    )
+  );
+})

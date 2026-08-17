@@ -1,50 +1,46 @@
 import * as favoriteService from "../services/favorite.service.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-export const followAdmin = async (req, res, next) => {
-  try {
-    const customer = await favoriteService.followAdmin(
-      req.user._id,
-      req.params.adminId
-    );
+export const followAdmin = asyncHandler(async (req, res, next) => {
+  const customer = await favoriteService.followAdmin(
+    req.user._id,
+    req.params.adminId
+  );
 
-    res.status(200).json({
-      success: true,
-      message: "Admin followed successfully",
-      data: customer,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Admin followed successfully",
+      customer
+    )
+  );
+})
 
-export const unfollowAdmin = async (req, res, next) => {
-  try {
-    const customer = await favoriteService.unfollowAdmin(
-      req.user._id,
-      req.params.adminId
-    );
+export const unfollowAdmin = asyncHandler(async (req, res, next) => {
+  const customer = await favoriteService.unfollowAdmin(
+    req.user._id,
+    req.params.adminId
+  );
 
-    res.status(200).json({
-      success: true,
-      message: "Admin unfollowed successfully",
-      data: customer,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Admin unfollowed successfully",
+      customer,
+    )
+  );
+})
 
-export const getFavoriteAdmins = async (req, res, next) => {
-  try {
-    const admins = await favoriteService.getFavoriteAdmins(
-      req.user._id
-    );
+export const getFavoriteAdmins = asyncHandler(async (req, res, next) => {
+  const admins = await favoriteService.getFavoriteAdmins(
+    req.user._id
+  );
 
-    res.status(200).json({
-      success: true,
-      data: admins,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Admins fetched successfully",
+      admins
+    )
+  );
+})

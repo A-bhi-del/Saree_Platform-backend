@@ -1,72 +1,66 @@
 import * as notificationService from "../services/notification.service.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import { notificationIdSchema } from "../validators/notification.validator.js";
 
-export const getNotifications = async (req, res, next) => {
-  try {
-    const { page, limit } = req.query;
+export const getNotifications = asyncHandler(async (req, res, next) => {
+  const { page, limit } = req.query;
+  const result = await notificationService.getNotifications(
+    req.user._id,
+    page,
+    limit
+  );
 
-    const result = await notificationService.getNotifications(
-      req.user._id,
-      page,
-      limit
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Notifications fetched successfully",
+      result.notifications,
+      result.pagination
+    )
+  );
+})
 
-    res.status(200).json({
-      success: true,
-      data: result.notifications,
-      pagination: result.pagination,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+export const markAsRead = asyncHandler(async (req, res, next) => {
+  notificationIdSchema.parse(req.params);
 
-export const markAsRead = async (req, res, next) => {
-  try {
-    notificationIdSchema.parse(req.params);
+  const notification = await notificationService.markAsRead(
+    req.params.id,
+    req.user._id
+  );
 
-    const notification = await notificationService.markAsRead(
-      req.params.id,
-      req.user._id
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Notification marked as read",
+      notification
+    )
+  );
+})
 
-    res.status(200).json({
-      success: true,
-      message: "Notification marked as read",
-      data: notification,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+export const markAllAsRead = asyncHandler(async (req, res, next) => {
+  await notificationService.markAllAsRead(req.user._id);
 
-export const markAllAsRead = async (req, res, next) => {
-  try {
-    await notificationService.markAllAsRead(req.user._id);
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "All notifications marked as read"
+    )
+  );
+})
 
-    res.status(200).json({
-      success: true,
-      message: "All notifications marked as read",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+export const deleteNotification = asyncHandler(async (req, res, next) => {
+  notificationIdSchema.parse(req.params);
 
-export const deleteNotification = async (req, res, next) => {
-  try {
-    notificationIdSchema.parse(req.params);
+  await notificationService.deleteNotification(
+    req.params.id,
+    req.user._id
+  );
 
-    await notificationService.deleteNotification(
-      req.params.id,
-      req.user._id
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Notification deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Notification deleted successfully"
+    )
+  );
+})
