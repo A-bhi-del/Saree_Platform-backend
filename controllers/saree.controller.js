@@ -1,111 +1,96 @@
 import * as sareeService from "../services/saree.service.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import { createSareeSchema, updateSareeSchema } from "../validators/saree.validator.js";
 
-export const createSaree = async (req, res, next) => {
-  try {
-    const validatedData = createSareeSchema.parse(req.body);
+export const createSaree = asyncHandler(async (req, res, next) => {
+  const validatedData = createSareeSchema.parse(req.body);
 
-    const saree = await sareeService.createSaree({
-      ...validatedData,
-      admin: req.user._id,
-    });
+  const saree = await sareeService.createSaree({
+    ...validatedData,
+    admin: req.user._id,
+  });
 
-    res.status(201).json({
-      success: true,
-      message: "Saree created successfully",
-      data: saree,
-    });
-  } catch (error) {
-    next(error);
+  return res.status(201).json(
+    new ApiResponse(
+      200,
+      "Saree created successfully",
+      saree
+    )
+  );
+})
+
+export const updateSaree = asyncHandler(async (req, res, next) => {
+  const validatedData = updateSareeSchema.parse(req.body);
+  const saree = await sareeService.updateSaree(
+    req.params.id,
+    req.user._id,
+    validatedData
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Saree updated successfully",
+      saree
+    )
+  );
+})
+
+export const getAllSarees = asyncHandler(async (req, res, next) => {
+  const filters = { ...req.query };
+
+  if (req.user.role === "admin") {
+    filters.admin = req.user._id;
   }
-};
 
-export const updateSaree = async (req, res, next) => {
-  try {
-    const validatedData = updateSareeSchema.parse(req.body);
+  const result = await sareeService.getAllSarees(filters);
 
-    const saree = await sareeService.updateSaree(
-      req.params.id,
-      req.user._id,
-      validatedData
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Sarees fetched successfully",
+      result.sarees,
+      result.pagination
+    )
+  );
+})
 
-    res.status(200).json({
-      success: true,
-      message: "Saree updated successfully",
-      data: saree,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+export const getRelatedSarees = asyncHandler(async (req, res, next) => {
+  const sarees = await sareeService.getRelatedSarees(req.params.id);
 
-export const getAllSarees = async (req, res, next) => {
-  try {
-    const filters = { ...req.query };
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Related sarees fetched successfully",
+      sarees
+    )
+  );
+})
 
-    if (req.user.role === "admin") {
-      filters.admin = req.user._id;
-    }
+export const getSareeById = asyncHandler(async (req, res, next) => {
+  const saree = await sareeService.getSareeByID(req.params.id);
 
-    const result = await sareeService.getAllSarees(filters);
-
-    res.status(200).json({
-      success: true,
-      data: result.sarees,
-      pagination: result.pagination,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getRelatedSarees = async (
-  req,
-  res,
-  next
-) => {
-  try {
-    const sarees =
-      await sareeService.getRelatedSarees(
-        req.params.id
-      );
-
-    res.status(200).json({
-      success: true,
-      data: sarees,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getSareeById = async (req, res, next) => {
-  try {
-    const saree = await sareeService.getSareeByID(req.params.id);
-
-    res.status(200).json({
-      success: true,
-      data: saree,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Saree fetched successfully",
+      saree
+    )
+  );
+})
 
 
-export const deleteSaree = async (req, res, next) => {
-  try {
-    await sareeService.deleteSaree(
-      req.params.id,
-      req.user._id
-    );
+export const deleteSaree = (async (req, res, next) => {
+  await sareeService.deleteSaree(
+    req.params.id,
+    req.user._id
+  );
 
-    res.status(200).json({
-      success: true,
-      message: "Saree deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Saree deleted successfully"
+    )
+  );
+})
