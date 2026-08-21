@@ -1,8 +1,9 @@
 import * as favoriteService from "../services/favorite.service.js";
+import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 export const followAdmin = asyncHandler(async (req, res, next) => {
-  const customer = await favoriteService.followAdmin(
+  const admin = await favoriteService.followAdmin(
     req.user._id,
     req.params.adminId
   );
@@ -11,13 +12,13 @@ export const followAdmin = asyncHandler(async (req, res, next) => {
     new ApiResponse(
       200,
       "Admin followed successfully",
-      customer
+      admin
     )
   );
 })
 
 export const unfollowAdmin = asyncHandler(async (req, res, next) => {
-  const customer = await favoriteService.unfollowAdmin(
+  const admin = await favoriteService.unfollowAdmin(
     req.user._id,
     req.params.adminId
   );
@@ -26,7 +27,7 @@ export const unfollowAdmin = asyncHandler(async (req, res, next) => {
     new ApiResponse(
       200,
       "Admin unfollowed successfully",
-      customer,
+      admin,
     )
   );
 })

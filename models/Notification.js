@@ -12,6 +12,8 @@ const notificationSchema = new mongoose.Schema(
         "sale",
         "general",
         "Discount Updated",
+        "Follow",
+        "Un-Follow",
       ],
       required: true,
     },

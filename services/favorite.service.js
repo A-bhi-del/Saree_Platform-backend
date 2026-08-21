@@ -1,35 +1,35 @@
 import User from "../models/User.js";
 import ApiError from "../utils/ApiError.js";
+import * as notificationService from "./notification.service.js";
 
 export const followAdmin = async (
-    customerId,
-    adminId
+    adminAId,
+    adminBId
 ) => {
-
-    if (customerId.toString() === adminId.toString()) {
+    if (adminAId.toString() === adminBId.toString()) {
         throw new ApiError(
             400,
             "You cannot follow yourself."
         );
     }
 
-    const admin = await User.findOne({
-        _id: adminId,
+    const adminB = await User.findOne({
+        _id: adminBId,
         role: "admin",
     });
 
-    if (!admin) {
+    if (!adminB) {
         throw new ApiError(
             404,
             "Admin not found."
         );
     }
 
-    const customer = await User.findById(customerId);
+    const adminA = await User.findById(adminAId);
 
     const alreadyFollowing =
-        customer.favoriteAdmins.some(
-            (id) => id.toString() === adminId.toString()
+        adminA.following.some(
+            (id) => id.toString() === adminBId.toString()
         );
 
     if (alreadyFollowing) {
@@ -39,49 +39,90 @@ export const followAdmin = async (
         );
     }
 
-    customer.favoriteAdmins.push(adminId);
+    const alreadyFollower =
+        adminB.followers.some(
+            (id) => id.toString() === adminAId.toString()
+        );
 
-    await customer.save();
+    if (alreadyFollower) {
+        throw new ApiError(
+            400,
+            "Admin already follower."
+        );
+    }
 
-    return customer;
+    adminA.following.push(adminBId);
+    adminB.followers.push(adminAId);
+
+    await adminA.save();
+    await adminB.save();
+
+    await notificationService.createNotification({
+        sender: adminAId,
+        receiver: adminBId,
+        type: "Follow",
+        title: "New Follower",
+        message: `${adminA.shopName} is starting to follow you.`,
+        route: "/followers",
+        data: {
+            adminId: adminAId,
+            ShopName: adminA.shopName,
+        },
+    });
+
+    return adminA;
 };
 
 export const unfollowAdmin = async (
-    customerId,
-    adminId
+    adminAId,
+    adminBId
 ) => {
+    const adminA = await User.findById(adminAId);
+    const adminB = await User.findById(adminBId);
 
-    const customer = await User.findById(customerId);
+    if (!adminA || !adminB) {
+        throw new ApiError(
+            404,
+            "Admin not found."
+        );
+    }
 
-    customer.favoriteAdmins.pull(adminId);
+    adminA.following.pull(adminBId);
+    adminB.followers.pull(adminAId);
+    await adminA.save();
+    await adminB.save();
 
-    await customer.save();
-
-    return customer;
+    await notificationService.createNotification({
+        sender: adminAId,
+        receiver: adminBId,
+        type: "Un-Follow",
+        title: "Unfollow",
+        message: `${adminA.shopName} is Unfollow you.`,
+        route: "/",
+        data: {
+            adminId: adminAId,
+            ShopName: adminA.shopName,
+        },
+    });
+    return adminA;
 };
 
 export const getFavoriteAdmins = async (
-    customerId
+    adminAId
 ) => {
-
-    const customer = await User.findById(
-        customerId
+    const admin = await User.findById(
+        adminAId
     ).populate(
         "favoriteAdmins",
         "name email profileImage"
     );
 
-    return customer.favoriteAdmins;
+    return admin.favoriteAdmins;
 };
 
 export const getFollowers = async (adminId) => {
-
     return await User.find({
-
-        role:"customer",
-
-        favoriteAdmins:adminId
-
+        role: "admin",
+        following: adminId
     });
-
 };

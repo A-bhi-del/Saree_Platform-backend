@@ -25,6 +25,8 @@ export const getNotifications = async (
         { type: "sale" },
         { type: "new-saree" },
         { type: "Discount Updated" },
+        { type: "Follow" },
+        { type: "Un-Follow" },
       ],
     })
       .populate("sender", "name profileImage role")

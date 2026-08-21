@@ -8,21 +8,21 @@ const router = express.Router();
 router.post(
   "/:adminId",
   protect,
-  authorize("customer"),
+  authorize("admin"),
   favoriteController.followAdmin
 );
 
 router.delete(
   "/:adminId",
   protect,
-  authorize("customer"),
+  authorize("admin"),
   favoriteController.unfollowAdmin
 );
 
 router.get(
   "/",
   protect,
-  authorize("customer"),
+  authorize("admin"),
   favoriteController.getFavoriteAdmins
 );
 
