@@ -16,6 +16,7 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import { CLIENT_URL } from "./config/constans.js";
+import { startCronJobs } from "./cron/jobs.js";
 
 const app = express();
 const allowedOrigins = [
@@ -56,9 +57,9 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
-
     await connectRedis();
-
+    startCronJobs();
+    
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
