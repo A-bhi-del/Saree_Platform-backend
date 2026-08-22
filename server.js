@@ -17,8 +17,13 @@ import cors from "cors";
 import morgan from "morgan";
 import { CLIENT_URL } from "./config/constans.js";
 import { startCronJobs } from "./cron/jobs.js";
+import { Server } from "socket.io";
+import http from "http";
+import { initializeSocket } from "./socket/socket.js";
 
 const app = express();
+const server = http.createServer(app);
+
 const allowedOrigins = [
   "http://localhost:5173",
   CLIENT_URL,
@@ -54,13 +59,15 @@ app.use("/api/shops", shopRoutes);
 app.use("/api/favorite-sarees", favoriteSareeRoutes);
 app.use(errorHandler);
 
+initializeSocket(server);
+
 const startServer = async () => {
   try {
     await connectDB();
     await connectRedis();
     startCronJobs();
     
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {

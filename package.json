@@ -26,6 +26,7 @@
     "nodemailer": "^9.0.3",
     "rate-limit-redis": "^5.0.0",
     "redis": "^5.12.1",
+    "socket.io": "^4.8.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {

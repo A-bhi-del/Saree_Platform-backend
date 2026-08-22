@@ -1,8 +1,32 @@
 import Notification from "../models/Notification.js";
+import User from "../models/User.js";
+import { getIO } from "../socket/socket.js";
 import { getPagination } from "../utils/pagination.js";
 
 export const createNotification = async (notificationData) => {
-  return await Notification.create(notificationData);
+
+    const notification = await Notification.create(
+        notificationData
+    );
+
+    const io = getIO();
+
+    if (notification.receiver) {
+        io.to(`user:${notification.receiver}`)
+            .emit(
+                "new-notification",
+                notification
+            );
+
+        return notification;
+    }
+
+    io.to("customers").emit(
+        "new-notification",
+        notification
+    );
+
+    return notification;
 };
 
 export const getNotifications = async (
