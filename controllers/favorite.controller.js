@@ -5,7 +5,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 export const followAdmin = asyncHandler(async (req, res, next) => {
   const admin = await favoriteService.followAdmin(
     req.user._id,
-    req.params.adminId
+    req.params.adminBId
   );
 
   return res.status(200).json(
@@ -32,8 +32,22 @@ export const unfollowAdmin = asyncHandler(async (req, res, next) => {
   );
 })
 
-export const getFavoriteAdmins = asyncHandler(async (req, res, next) => {
-  const admins = await favoriteService.getFavoriteAdmins(
+export const getFallower = asyncHandler(async (req, res, next) => {
+  const admins = await favoriteService.getFollowers(
+    req.user._id
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Admins fetched successfully",
+      admins
+    )
+  );
+})
+
+export const getFollowing = asyncHandler(async (req, res) => {
+  const admins = await favoriteService.getFollowings(
     req.user._id
   );
 

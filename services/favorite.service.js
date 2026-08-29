@@ -107,22 +107,16 @@ export const unfollowAdmin = async (
     return adminA;
 };
 
-export const getFavoriteAdmins = async (
-    adminAId
-) => {
-    const admin = await User.findById(
-        adminAId
-    ).populate(
-        "favoriteAdmins",
-        "name email profileImage"
-    );
+export const getFollowers = async (adminId) => {
+    const admin = await User.findById(adminId)
+        .populate("followers", "name email profileImage");
 
-    return admin.favoriteAdmins;
+    return admin.followers;
 };
 
-export const getFollowers = async (adminId) => {
-    return await User.find({
-        role: "admin",
-        following: adminId
-    });
+export const getFollowings = async (adminId) => {
+    const admin = await User.findById(adminId)
+        .populate("following", "name email profileImage");
+
+    return admin.following;
 };

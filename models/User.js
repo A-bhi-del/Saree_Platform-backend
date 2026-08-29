@@ -86,9 +86,13 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.index({
-  role: 1,
-});
+userSchema.index(
+  { role: 1 },
+  {
+    partialFilterExpression: { role: "admin" },
+    name: "admin_role_idx",
+  }
+);
 
 const User = mongoose.model("User", userSchema);
 

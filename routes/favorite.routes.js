@@ -6,7 +6,7 @@ import authorize from "../middleware/role.middleware.js";
 const router = express.Router();
 
 router.post(
-  "/:adminId",
+  "/:adminBId",
   protect,
   authorize("admin"),
   favoriteController.followAdmin
@@ -20,10 +20,17 @@ router.delete(
 );
 
 router.get(
-  "/",
+  "/followers",
   protect,
   authorize("admin"),
-  favoriteController.getFavoriteAdmins
+  favoriteController.getFallower
 );
+
+router.get(
+  "/followings",
+  protect,
+  authorize("admin"),
+  favoriteController.getFollowing
+)
 
 export default router;

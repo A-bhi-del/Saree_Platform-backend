@@ -12,6 +12,7 @@ import {connectRedis} from "./config/redis.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
 import favoriteSareeRoutes from "./routes/favoriteSaree.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
@@ -57,6 +58,7 @@ app.use("/api/sales", saleRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/favorite-sarees", favoriteSareeRoutes);
+app.use("/api/admins", adminRoutes);
 app.use(errorHandler);
 
 initializeSocket(server);
