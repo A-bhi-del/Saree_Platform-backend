@@ -33,4 +33,25 @@ router.get(
   favoriteController.getFollowing
 )
 
+router.get(
+    "/exists/:adminId",
+    protect,
+    authorize("admin"),
+    favoriteController.isExist
+);
+
+router.get(
+    "/followercount",
+    protect,
+    authorize("admin"),
+    favoriteController.getfollowercount
+);
+
+router.get(
+    "/followingcount",
+    protect,
+    authorize("admin"),
+    favoriteController.getfollowingcount
+);
+
 export default router;

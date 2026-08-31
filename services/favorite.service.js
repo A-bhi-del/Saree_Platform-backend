@@ -1,3 +1,4 @@
+import Favourite from "../models/Favourite.js";
 import User from "../models/User.js";
 import ApiError from "../utils/ApiError.js";
 import * as notificationService from "./notification.service.js";
@@ -25,12 +26,22 @@ export const followAdmin = async (
         );
     }
 
-    const adminA = await User.findById(adminAId);
+    const adminA = await User.findById({
+        _id: adminAId,
+        role: "admin",
+    });
 
-    const alreadyFollowing =
-        adminA.following.some(
-            (id) => id.toString() === adminBId.toString()
+    if(!adminA) {
+        throw new ApiError(
+            404,
+            "Admin not found."
         );
+    }
+
+    const alreadyFollowing = await Favourite.findOne({
+        followerId: adminAId,
+        followingId: adminBId
+    })
 
     if (alreadyFollowing) {
         throw new ApiError(
@@ -39,23 +50,12 @@ export const followAdmin = async (
         );
     }
 
-    const alreadyFollower =
-        adminB.followers.some(
-            (id) => id.toString() === adminAId.toString()
-        );
+    const favourite = await Favourite.create({
+        followerId: adminAId,
+        followingId: adminBId,
+    });
 
-    if (alreadyFollower) {
-        throw new ApiError(
-            400,
-            "Admin already follower."
-        );
-    }
-
-    adminA.following.push(adminBId);
-    adminB.followers.push(adminAId);
-
-    await adminA.save();
-    await adminB.save();
+    await favourite.save();
 
     await notificationService.createNotification({
         sender: adminAId,
@@ -63,7 +63,7 @@ export const followAdmin = async (
         type: "Follow",
         title: "New Follower",
         message: `${adminA.shopName} is starting to follow you.`,
-        route: "/followers",
+        route: "/admin-followers",
         data: {
             adminId: adminAId,
             ShopName: adminA.shopName,
@@ -77,8 +77,14 @@ export const unfollowAdmin = async (
     adminAId,
     adminBId
 ) => {
-    const adminA = await User.findById(adminAId);
-    const adminB = await User.findById(adminBId);
+    const adminA = await User.findById({
+        _id: adminAId,
+        role: "admin",
+    });
+    const adminB = await User.findById({
+        _id: adminBId,
+        role: "admin",
+    });
 
     if (!adminA || !adminB) {
         throw new ApiError(
@@ -87,10 +93,10 @@ export const unfollowAdmin = async (
         );
     }
 
-    adminA.following.pull(adminBId);
-    adminB.followers.pull(adminAId);
-    await adminA.save();
-    await adminB.save();
+    await Favourite.deleteOne({
+        followerId: adminAId,
+        followingId: adminBId,
+    });
 
     await notificationService.createNotification({
         sender: adminAId,
@@ -104,19 +110,41 @@ export const unfollowAdmin = async (
             ShopName: adminA.shopName,
         },
     });
+
     return adminA;
 };
 
 export const getFollowers = async (adminId) => {
-    const admin = await User.findById(adminId)
-        .populate("followers", "name email profileImage");
+    const followers = await Favourite.find({
+        followingId: adminId
+    }).populate("followerId", "name email profileImage");
 
-    return admin.followers;
+    return followers.map(follow => follow.followerId);
 };
 
 export const getFollowings = async (adminId) => {
-    const admin = await User.findById(adminId)
-        .populate("following", "name email profileImage");
+    const following = await Favourite.find({
+        followerId: adminId
+    }).populate("followingId", "name email profileImage");
 
-    return admin.following;
+    return following.map(follow => follow.followingId);
 };
+
+export const isExist = async (followerId, followingId) => {
+    return await Favourite.exists({
+        followerId,
+        followingId
+    });
+};
+
+export const getFollowerCount = async (adminId) => {
+    return await Favourite.countDocuments({
+        followingId: adminId
+    });
+}
+
+export const getFollowingCount = async(adminId) => {
+    return await Favourite.countDocuments({
+        followerId: adminId
+    });
+}

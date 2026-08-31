@@ -59,3 +59,46 @@ export const getFollowing = asyncHandler(async (req, res) => {
     )
   );
 })
+
+export const isExist = asyncHandler(async (req, res) => {
+    const result = await favoriteService.isExist(
+        req.user._id,
+        req.params.adminId
+    );
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Follow status fetched successfully",
+            !!result
+        )
+    );
+});
+
+export const getfollowercount = asyncHandler(async (req, res) => {
+    const result = await favoriteService.getFollowerCount(
+        req.user._id
+    );
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Follow status fetched successfully",
+            result
+        )
+    );
+});
+
+export const getfollowingcount = asyncHandler(async (req, res) => {
+    const result = await favoriteService.getFollowingCount(
+        req.user._id
+    );
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Follow status fetched successfully",
+            result
+        )
+    );
+});

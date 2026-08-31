@@ -10,7 +10,7 @@ import saleRoutes from "./routes/sale.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import {connectRedis} from "./config/redis.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
-import favoriteSareeRoutes from "./routes/favoriteSaree.routes.js";
+import favoriteSareeRoutes from "./routes/favoritesaree.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import helmet from "helmet";

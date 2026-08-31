@@ -59,21 +59,7 @@ const userSchema = new mongoose.Schema(
         ref: "Saree",
       },
     ],
-
-    followers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    following: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
+    
     notifications: [
       {
         type: mongoose.Schema.Types.ObjectId,

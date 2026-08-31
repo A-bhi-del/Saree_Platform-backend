@@ -1,4 +1,4 @@
-import * as favoriteSareeService from "../services/favoriteSaree.service.js";
+import * as favoriteSareeService from "../services/favoritesaree.service.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
