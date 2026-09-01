@@ -6,6 +6,7 @@ import validate from "../middleware/validate.js";
 import { createSareeSchema, updateSareeSchema } from "../validators/saree.validator.js";
 import { searchSareeSchema } from "../validators/sareeSearch.validator.js";
 import { mongoIdSchema } from "../validators/common.validator.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.post(
   "/",
   protect,
   authorize("admin"),
+  upload.array("images", 6),
   validate(createSareeSchema),
   sareeController.createSaree
 );
@@ -40,6 +42,7 @@ router.put(
   "/:id",
   protect,
   authorize("admin"),
+  upload.array("images", 6),
   validate(mongoIdSchema, "params"),
   validate(updateSareeSchema),
   sareeController.updateSaree

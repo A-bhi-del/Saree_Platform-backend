@@ -59,15 +59,23 @@ const sareeSchema = new mongoose.Schema(
 
     images: [
       {
-        type: String,
+        url: {
+          type: String,
+          required: true,
+        },
+
+        publicId: {
+          type: String,
+          required: true,
+        },
       },
     ],
 
-    like:{
+    like: {
       type: Number,
       default: 0
     },
-    
+
     isAvailable: {
       type: Boolean,
       default: true,

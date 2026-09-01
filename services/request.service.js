@@ -22,15 +22,10 @@ export const createRequest = async (requestData, customerId) => {
     await notificationService.createNotification({
         sender: customerId,
         receiver: request.admin,
-
         type: "request",
-
         title: "New Request",
-
         message: `${request.designName} request received.`,
-
         route: "/request",
-
         data: {
             requestId: request._id,
             designName: request.designName,

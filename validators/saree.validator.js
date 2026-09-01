@@ -29,15 +29,18 @@ export const createSareeSchema = z.object({
     .min(2, "Category is required"),
 
   price: z
+    .coerce
     .number()
     .positive("Price must be greater than 0"),
 
   stock: z
+    .coerce
     .number()
     .int("Stock must be an integer")
     .min(0, "Stock cannot be negative"),
 
   discountPercentage: z
+    .coerce
     .number()
     .min(0)
     .max(100)

@@ -1,15 +1,19 @@
-import * as sareeService from "../services/saree.service.js";
-import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import * as sareeService from "../services/saree.service.js";
 import { createSareeSchema, updateSareeSchema } from "../validators/saree.validator.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const createSaree = asyncHandler(async (req, res, next) => {
   const validatedData = createSareeSchema.parse(req.body);
 
-  const saree = await sareeService.createSaree({
-    ...validatedData,
-    admin: req.user._id,
-  });
+  const saree = await sareeService.createSaree(
+    {
+      ...validatedData,
+      admin: req.user._id,
+    },
+    req.files
+  );
 
   return res.status(201).json(
     new ApiResponse(
@@ -18,14 +22,15 @@ export const createSaree = asyncHandler(async (req, res, next) => {
       saree
     )
   );
-})
+});
 
 export const updateSaree = asyncHandler(async (req, res, next) => {
   const validatedData = updateSareeSchema.parse(req.body);
   const saree = await sareeService.updateSaree(
     req.params.id,
     req.user._id,
-    validatedData
+    validatedData,
+    req.files
   );
 
   return res.status(200).json(

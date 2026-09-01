@@ -7,9 +7,28 @@ import { deleteCache } from "../utils/cache.js";
 import { buildSortQuery } from "../utils/buildSortQuery.js";
 import { buildSareeQuery } from "../utils/buildSareeQuery.js";
 import User from "../models/User.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
-export const createSaree = async (sareeData) => {
-  const saree = await Saree.create(sareeData);
+export const createSaree = async (sareeData, files) => {
+  if (!files || files.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "At least one image is required",
+    });
+  }
+
+  const uploadedImages = await Promise.all(
+    files.map((file) =>
+      uploadToCloudinary(file, "my_app/sarees")
+    )
+  );
+
+  const images = uploadedImages.map((image) => ({
+    url: image.secure_url,
+    publicId: image.public_id,
+  }));
+
+  const saree = await Saree.create({ ...sareeData, images });
 
   notificationService.createNotification({
     sender: saree.admin,
@@ -21,7 +40,7 @@ export const createSaree = async (sareeData) => {
       adminId: saree.admin,
       sareeId: saree._id,
     },
-  })
+  });
 
   await deleteCache(`shop:${saree.admin}`);
 
@@ -30,9 +49,7 @@ export const createSaree = async (sareeData) => {
 
 export const getAllSarees = async (filters) => {
   const { page, limit, sort, admin } = filters;
-
   const { skip, page: currentPage, limit: perPage } = getPagination(page, limit);
-
   let query = buildSareeQuery(filters);
 
   if (admin) {
@@ -118,40 +135,60 @@ export const getSareeByID = async (id) => {
 export const updateSaree = async (
   id,
   userId,
-  updateData
+  updateData,
+  files = []
 ) => {
   const saree = await Saree.findById(id);
 
   if (!saree) {
-    throw new ApiError(
-      404,
-      "Saree not found"
-    );
+    throw new ApiError(404, "Saree not found");
   }
 
   if (
     saree.admin.toString() !==
     userId.toString()
   ) {
+    throw new ApiError(403, "Unauthorized");
+  }
+
+  const oldDiscountPercentage =
+    saree.discountPercentage;
+
+  if (saree.images.length + files.length > 6) {
     throw new ApiError(
-      403,
-      "Unauthorized"
+      400,
+      `Maximum 6 images allowed. You already have ${saree.images.length} images.`
     );
   }
 
-  const updatedSaree =
-    await Saree.findByIdAndUpdate(
-      id,
-      updateData,
-      {
-        new: true,
-        runValidators: true,
-      }
+  if (files.length > 0) {
+    const uploadedImages = await Promise.all(
+      files.map((file) =>
+        uploadToCloudinary(
+          file,
+          "my_app/sarees"
+        )
+      )
     );
 
+    const newImages = uploadedImages.map(
+      (image) => ({
+        url: image.secure_url,
+        publicId: image.public_id,
+      })
+    );
+
+    saree.images.push(...newImages);
+  }
+
+  Object.assign(saree, updateData);
+  const updatedSaree = await saree.save();
   await deleteCache(`shop:${userId}`);
 
-  if (updatedSaree.discountPercentage !== saree.discountPercentage) {
+  if (
+    updatedSaree.discountPercentage !==
+    oldDiscountPercentage
+  ) {
     notificationService.createNotification({
       sender: saree.admin,
       type: "Discount Updated",
@@ -162,7 +199,7 @@ export const updateSaree = async (
         adminId: saree.admin,
         sareeId: saree._id,
       },
-    })
+    });
   }
 
   return updatedSaree;
