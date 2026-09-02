@@ -2,7 +2,6 @@ import cloudinary from "../config/cloudinary.js";
 
 const uploadToCloudinary = (file, folder) => {
     return new Promise((resolve, reject) => {
-
         const stream = cloudinary.uploader.upload_stream(
             {
                 folder: folder,

@@ -9,6 +9,7 @@ import { verifyOtpSchema } from "../validators/auth.validator.js";
 import protect from "../middleware/auth.middleware.js";
 import rateLimiter from "../middleware/rateLimit.middleware.js";
 import { DEFAULT_RATE } from "../config/rates.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -45,6 +46,7 @@ router.get("/me", protect, getCurrentUser);
 router.patch(
   "/edit-profile",
   protect,
+  upload.single("image"),
   validate(updateProfileSchema),
   updateProfile
 );

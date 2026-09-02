@@ -6,6 +6,7 @@ import generateOTP from "../utils/generateOTP.js";
 import sendEmail from "../utils/sendEmail.js";
 import { otpTemplate } from "../utils/emailTemplates.js";
 import ApiError from "../utils/ApiError.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const registerUser = async (userData) => {
   const { name, email, password, role, shopName } = userData;
@@ -125,7 +126,23 @@ export const loginUser = async ({ email, password, role }) => {
   };
 };
 
-export const updatedProfile = async (userId, updateData) => {
+export const updatedProfile = async (userId, updateData, file) => {
+  // if (!file) {
+  //   return res.status(400).json({
+  //     success: false,
+  //     message: "No image is provided",
+  //   });
+  // }
+
+  const uploadedImage = await uploadToCloudinary(file, "my_app/sarees")
+   
+  const image = {
+    url: uploadedImage.secure_url,
+    publicId: uploadedImage.public_id,
+  };
+
+  updateData = { ...updateData, profileImage: image};
+
   const user = await User.findByIdAndUpdate(
     userId,
     updateData,

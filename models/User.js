@@ -43,9 +43,17 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    profileImage: {
-      type: String,
-      default: "",
+    profileImage:
+    {
+      url: {
+        type: String,
+        required: true,
+      },
+
+      publicId: {
+        type: String,
+        required: true,
+      },
     },
 
     isVerified: {
@@ -59,7 +67,7 @@ const userSchema = new mongoose.Schema(
         ref: "Saree",
       },
     ],
-    
+
     notifications: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -96,7 +96,6 @@ export const updateProfile = asyncHandler(async (req, res) => {
     name,
     phone,
     address,
-    profileImage,
     shopName,
   } = req.body;
 
@@ -104,14 +103,13 @@ export const updateProfile = asyncHandler(async (req, res) => {
     name,
     phone,
     address,
-    profileImage,
   };
 
   if (role === "admin" && shopName !== undefined) {
     updateData.shopName = shopName;
   }
 
-  const user = await updatedProfile(userId, updateData);
+  const user = await updatedProfile(userId, updateData, req.file);
 
   return res.status(200).json(
     new ApiResponse(
