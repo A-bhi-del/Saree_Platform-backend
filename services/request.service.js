@@ -1,10 +1,26 @@
 import Request from "../models/Request.js";
 import { getPagination } from "../utils/pagination.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import * as notificationService from "./notification.service.js";
 
-export const createRequest = async (requestData, customerId) => {
+export const createRequest = async (requestData, files) => {
+    if (!files || files.length === 0) {
+        throw new ApiError(400, "At least one image is required");
+    }
+
+    const uploadedImages = await Promise.all(
+        files.map((file) =>
+            uploadToCloudinary(file, "my_app/requests")
+        )
+    );
+
+    const images = uploadedImages.map((image) => ({
+        url: image.secure_url,
+        publicId: image.public_id,
+    }));
+
     const existingRequest = await Request.findOne({
-        customer: customerId,
+        customer: requestData.customerId,
         admin: requestData.admin,
         designName: requestData.designName,
         status: "pending",
@@ -16,11 +32,12 @@ export const createRequest = async (requestData, customerId) => {
 
     const request = await Request.create({
         ...requestData,
-        customer: customerId,
+        customer: requestData.customerId,
+        images,
     });
 
     await notificationService.createNotification({
-        sender: customerId,
+        sender: requestData.customerId,
         receiver: request.admin,
         type: "request",
         title: "New Request",
@@ -100,7 +117,7 @@ export const updateRequestStatus = async (
 
     await notificationService.createNotification({
         sender: adminId,
-        
+
         receiver: request.customer,
 
         type:

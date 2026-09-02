@@ -10,8 +10,11 @@ export const createRequest = asyncHandler(async (req, res, next) => {
   const validatedData = createRequestSchema.parse(req.body);
 
   const request = await requestService.createRequest(
-    validatedData,
-    req.user._id
+    {
+      ...validatedData,
+      customerId: req.user._id
+    },
+    req.files
   );
 
   return res.status(201).json(

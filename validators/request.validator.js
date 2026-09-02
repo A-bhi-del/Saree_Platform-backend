@@ -33,11 +33,13 @@ saree: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid Saree ID"),
     .optional(),
 
   quantity: z
+  .coerce
     .number()
     .int()
     .positive("Quantity must be greater than 0"),
 
   budget: z
+  .coerce
     .number()
     .positive("Budget must be greater than 0"),
 

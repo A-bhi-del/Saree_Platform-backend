@@ -127,12 +127,9 @@ export const loginUser = async ({ email, password, role }) => {
 };
 
 export const updatedProfile = async (userId, updateData, file) => {
-  // if (!file) {
-  //   return res.status(400).json({
-  //     success: false,
-  //     message: "No image is provided",
-  //   });
-  // }
+  if (!file) {
+    throw new ApiError(400, "Please upload a profile image");
+  }
 
   const uploadedImage = await uploadToCloudinary(file, "my_app/sarees")
    

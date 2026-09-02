@@ -54,10 +54,19 @@ const requestSchema = new mongoose.Schema({
         required: true,
     },
 
-    image: {
-        type: String,
-        default: "",
-    },
+    images: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+
+        publicId: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
 
     requiredByDate: {
         type: Date,

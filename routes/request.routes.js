@@ -2,6 +2,7 @@ import express from "express";
 import * as requestController from "../controllers/request.controller.js";
 import protect from "../middleware/auth.middleware.js";
 import authorize from "../middleware/role.middleware.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -9,6 +10,7 @@ router.post(
   "/",
   protect,
   authorize("customer"),
+  upload.array("images", 3),
   requestController.createRequest
 );
 
