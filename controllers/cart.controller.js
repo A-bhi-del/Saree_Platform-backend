@@ -3,11 +3,14 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 export const addItemToCart = asyncHandler(async (req, res) => {
-    const createdItem = await cartService.addItemToCart(
-        req.user._id,
-        req.body.sareeId,
-        req.body.quantity
-    );
+      console.log("Controller sareeId:", req.body.sareeId);
+//   console.log("Controller quantity:", quantity);
+    const createdItem = await cartService.addItemToCart({
+        userId: req.user._id,
+        sareeId: req.body.sareeId,
+        quantity: req.body.quantity
+    });
+    // console.log(req.body);
 
     return res.status(200).json(
         new ApiResponse(

@@ -7,8 +7,8 @@ export const addItemToCart = async ({
     sareeId,
     quantity
 }) => {
+    console.log(quantity);
     const saree = await Saree.findById(sareeId);
-
     if (!saree) {
         throw new ApiError(400, "Saree not found");
     }
@@ -98,11 +98,11 @@ export const getCartCount = async (userId) => {
     );
 };
 
-export const updateCartItem = async ({
+export const updateCartItem = async (
     userId,
     sareeId,
     quantity
-}) => {
+) => {
     if (quantity <= 0) {
         throw new Error("Quantity must be greater than 0");
     }
@@ -144,10 +144,10 @@ export const updateCartItem = async ({
     return cart;
 };
 
-export const removeCartItem = async ({
+export const removeCartItem = async (
     userId,
     sareeId
-}) => {
+) => {
     const cart = await Cart.findOne({ userId });
 
     if (!cart) {
