@@ -13,6 +13,7 @@ import favoriteRoutes from "./routes/favorite.routes.js";
 import favoriteSareeRoutes from "./routes/favoritesaree.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
@@ -59,6 +60,7 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/favorite-sarees", favoriteSareeRoutes);
 app.use("/api/admins", adminRoutes);
+app.use("/api/cart", cartRoutes);
 app.use(errorHandler);
 
 initializeSocket(server);

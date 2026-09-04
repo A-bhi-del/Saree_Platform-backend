@@ -112,6 +112,8 @@ export const deleteSale = async (
 export const getActiveSales = async () => {
   const today = new Date();
 
+  console.log(today);
+
   const sales = await Sale.find(
     {
       startDate: { $lte: today },
