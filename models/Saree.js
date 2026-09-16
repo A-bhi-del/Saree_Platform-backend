@@ -100,7 +100,9 @@ sareeSchema.index({ createdAt: -1 });
 
 sareeSchema.index({ isAvailable: 1 });
 
-const Saree = mongoose.model("Saree", sareeSchema);
+const Saree =
+  mongoose.models.Saree ||
+  mongoose.model("Saree", sareeSchema);
 
 export default Saree;
 

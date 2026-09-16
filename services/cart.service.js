@@ -1,5 +1,5 @@
 import Cart from "../models/cart.js";
-import Saree from "../models/Saree.js";
+import Saree from "../models/saree.js";
 import ApiError from "../utils/ApiError.js";
 
 export const addItemToCart = async ({

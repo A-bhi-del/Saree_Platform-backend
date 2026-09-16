@@ -1,10 +1,10 @@
 import User from "../models/User.js";
-import Saree from "../models/Saree.js";
 import Sale from "../models/Sale.js";
 
 import ApiError from "../utils/ApiError.js";
 
 import { getCache, setCache } from "../utils/cache.js";
+import Saree from "../models/saree.js";
 
 export const getShopDetails = async (adminId, customerId) => {
     const cacheKey = `shop:${adminId}`;

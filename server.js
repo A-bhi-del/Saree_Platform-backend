@@ -14,6 +14,8 @@ import favoriteSareeRoutes from "./routes/favoritesaree.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
@@ -61,6 +63,8 @@ app.use("/api/shops", shopRoutes);
 app.use("/api/favorite-sarees", favoriteSareeRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/order", orderRoutes);
+app.use("/api/payment", paymentRoutes);
 app.use(errorHandler);
 
 initializeSocket(server);

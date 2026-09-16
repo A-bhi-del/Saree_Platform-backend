@@ -27,6 +27,7 @@
     "node-cron": "^4.6.0",
     "nodemailer": "^9.0.3",
     "rate-limit-redis": "^5.0.0",
+    "razorpay": "^2.9.8",
     "redis": "^5.12.1",
     "socket.io": "^4.8.3",
     "zod": "^4.4.3"
