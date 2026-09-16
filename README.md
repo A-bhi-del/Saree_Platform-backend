@@ -153,7 +153,7 @@ saree-platform/
 
 ```bash
 # Clone the repo
-git clone https://github.com/<your-username>/saree-platform-backend.git
+git clone https://github.com/A-bhi-del/saree-platform-backend.git
 
 # Install server dependencies
 cd backend
