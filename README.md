@@ -1,6 +1,6 @@
 # Saree Platform 🧵
 
-A full-stack MERN e-commerce platform connecting **shopkeepers (admins)** and **customers**, built for browsing, requesting, purchasing, and managing sarees online — complete with real-time notifications, secure payments, and a follower system between customers and shops.
+A full-stack MERN e-commerce platform connecting **shopkeepers (admins)** and **customers**, built for browsing, requesting, purchasing, and managing sarees online — complete with real-time notifications, secure payments, and a follower system between shops only.
 
 ---
 
