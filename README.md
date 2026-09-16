@@ -136,12 +136,13 @@ A full-stack MERN e-commerce platform connecting **shopkeepers (admins)** and **
 
 ```
 saree-platform/
-├── client/          # React frontend
-├── server/          # Express backend
+├── saree-hub/       # React frontend
+├── backend/         # Express backend
 │   ├── controllers/
 │   ├── models/
 │   ├── routes/
 │   ├── middlewares/
+│   ├── services/
 │   └── utils/
 └── README.md
 ```
