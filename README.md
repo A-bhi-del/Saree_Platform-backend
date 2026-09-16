@@ -186,4 +186,4 @@ B.Tech CSE, IIIT Una
 
 ## 📄 License
 
-This project is currently unlicensed. Add a `LICENSE` file if you plan to open-source it.
+This project is currently unlicensed. 
