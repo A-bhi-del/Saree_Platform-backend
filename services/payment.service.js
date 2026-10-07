@@ -14,3 +14,20 @@ export const createRazorpayOrder = async ({
 
   return razorpayOrder;
 };
+
+
+export const verifyRazorpaySignature = async ({
+  orderId,
+  paymentId,
+  signature
+}) => {
+  const crypto = await import('crypto');
+  const { RAZORPAY_API_KEY_SECRET } = await import('../config/constans.js');
+
+  const generatedSignature = crypto
+    .createHmac('sha256', RAZORPAY_API_KEY_SECRET)
+    .update(`${orderId}|${paymentId}`)
+    .digest('hex');
+
+  return generatedSignature === signature;
+};

@@ -16,8 +16,99 @@ export const createOrder = asyncHandler(async (req, res) => {
   return res.status(201).json(
     new ApiResponse(
       201,
-      order,
-      "Order created successfully"
+      "Order created successfully",
+      order
+    )
+  );
+});
+
+
+// Get customer's orders
+export const getMyOrders = asyncHandler(async (req, res) => {
+  const { page, limit, status } = req.query;
+
+  const result = await orderService.getCustomerOrders(
+    req.user._id,
+    { page: parseInt(page), limit: parseInt(limit), status }
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Orders fetched successfully",
+      result.orders,
+      result.pagination
+    )
+  );
+});
+
+// Get admin's orders
+export const getAdminOrders = asyncHandler(async (req, res) => {
+  const { page, limit, status } = req.query;
+
+  const result = await orderService.getAdminOrders(
+    req.user._id,
+    { page: parseInt(page), limit: parseInt(limit), status }
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Orders fetched successfully",
+      result.orders,
+      result.pagination
+    )
+  );
+});
+
+// Get order by ID
+export const getOrderDetails = asyncHandler(async (req, res) => {
+  const order = await orderService.getOrderById(
+    req.params.id,
+    req.user._id,
+    req.user.role
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Order details fetched successfully",
+      order
+    )
+  );
+});
+
+// Update order status (admin only)
+export const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  const order = await orderService.updateOrderStatus(
+    req.params.id,
+    req.user._id,
+    status
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Order status updated successfully",
+      order
+    )
+  );
+});
+
+// Cancel order (customer only)
+export const cancelOrder = asyncHandler(async (req, res) => {
+  const order = await orderService.cancelOrder(
+    req.params.id,
+    req.user._id
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Order cancelled successfully",
+      order
     )
   );
 });
