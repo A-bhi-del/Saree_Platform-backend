@@ -3,14 +3,15 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 export const createOrder = asyncHandler(async (req, res) => {
-  const { shippingAddress, paymentMethod } = req.body;
+  const { shippingAddress, paymentMethod, couponCode } = req.body;
   const idempotencyKey = req.headers["idempotency-key"];
 
   const order = await orderService.createOrder({
     userId: req.user._id,
     shippingAddress,
     paymentMethod,
-    idempotencyKey
+    idempotencyKey,
+    couponCode
   });
 
   return res.status(201).json(
@@ -23,7 +24,6 @@ export const createOrder = asyncHandler(async (req, res) => {
 });
 
 
-// Get customer's orders
 export const getMyOrders = asyncHandler(async (req, res) => {
   const { page, limit, status } = req.query;
 
@@ -42,7 +42,6 @@ export const getMyOrders = asyncHandler(async (req, res) => {
   );
 });
 
-// Get admin's orders
 export const getAdminOrders = asyncHandler(async (req, res) => {
   const { page, limit, status } = req.query;
 
@@ -61,7 +60,6 @@ export const getAdminOrders = asyncHandler(async (req, res) => {
   );
 });
 
-// Get order by ID
 export const getOrderDetails = asyncHandler(async (req, res) => {
   const order = await orderService.getOrderById(
     req.params.id,
@@ -78,7 +76,6 @@ export const getOrderDetails = asyncHandler(async (req, res) => {
   );
 });
 
-// Update order status (admin only)
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
 
@@ -97,7 +94,6 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   );
 });
 
-// Cancel order (customer only)
 export const cancelOrder = asyncHandler(async (req, res) => {
   const order = await orderService.cancelOrder(
     req.params.id,

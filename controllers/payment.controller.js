@@ -1,10 +1,13 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import * as paymentService from "../services/payment.service.js";
+import * as couponService from "../services/coupon.service.js";
 import Order from "../models/Order.js";
 import Cart from "../models/cart.js";
+import CouponRedemption from "../models/CouponRedemption.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { RAZORPAY_API_KEY } from "../config/constans.js";
+import mongoose from "mongoose";
 
 export const createPaymentOrder = asyncHandler(async (req, res) => {
   const { orderId } = req.body;
@@ -85,18 +88,48 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Payment verification failed");
   }
 
-  // Update order with payment details
-  order.razorpayPaymentId = razorpayPaymentId;
-  order.razorpaySignature = razorpaySignature;
-  order.paymentStatus = "PAID";
-  order.orderStatus = "PLACED";
-  await order.save();
+  // Use transaction for finalizing payment and coupon redemption
+  const session = await mongoose.startSession();
+  
+  try {
+    session.startTransaction();
 
-  // Clear cart after successful payment verification
-  await Cart.findOneAndUpdate(
-    { userId: req.user._id },
-    { items: [] }
-  );
+    // Update order with payment details
+    order.razorpayPaymentId = razorpayPaymentId;
+    order.razorpaySignature = razorpaySignature;
+    order.paymentStatus = "PAID";
+    order.orderStatus = "PLACED";
+    await order.save({ session });
+
+    // Finalize coupon redemption if coupon was used
+    if (order.coupon && order.coupon.couponId) {
+      const redemption = await CouponRedemption.findOne({
+        orderId: order._id,
+        status: "RESERVED"
+      }).session(session);
+
+      if (redemption) {
+        await couponService.finalizeCouponRedemption({
+          redemptionId: redemption._id,
+          orderId: order._id,
+          session
+        });
+      }
+    }
+
+    await Cart.findOneAndUpdate(
+      { userId: req.user._id },
+      { items: [] },
+      { session }
+    );
+
+    await session.commitTransaction();
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
+  }
 
   return res.status(200).json(
     new ApiResponse(

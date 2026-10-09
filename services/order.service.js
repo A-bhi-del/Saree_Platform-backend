@@ -3,12 +3,14 @@ import Order from "../models/Order.js";
 import Cart from "../models/cart.js";
 import ApiError from "../utils/ApiError.js";
 import Saree from "../models/saree.js";
+import * as couponService from "./coupon.service.js";
 
 export const createOrder = async ({
   userId,
   shippingAddress,
   paymentMethod,
-  idempotencyKey
+  idempotencyKey,
+  couponCode
 }) => {
   if (!idempotencyKey) {
     throw new ApiError(400, "Idempotency key is required");
@@ -31,7 +33,7 @@ export const createOrder = async ({
     return existingOrder;
   }
 
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ userId }).populate("items.sareeId");
 
   if (!cart || cart.items.length === 0) {
     throw new ApiError(400, "Cart is empty");
@@ -46,7 +48,8 @@ export const createOrder = async ({
     let subtotal = 0;
 
     for (const cartItem of cart.items) {
-      const saree = await Saree.findById(cartItem.sareeId).session(session);
+      // Get fresh saree data within transaction for stock checking
+      const saree = await Saree.findById(cartItem.sareeId._id || cartItem.sareeId).session(session);
 
       if (!saree) {
         throw new ApiError(
@@ -83,8 +86,41 @@ export const createOrder = async ({
       subtotal += currentPrice * cartItem.quantity;
     }
 
-    const discount = 0;
+    let couponDiscount = 0;
+    let couponRedemption = null;
+    let couponSnapshot = null;
 
+    if (couponCode) {
+      const couponValidation = await couponService.validateCouponForOrder({
+        code: couponCode,
+        userId,
+        cartItems: cart.items
+      });
+
+      if (!couponValidation.isValid) {
+        throw new ApiError(400, "Invalid coupon");
+      }
+
+      couponDiscount = couponValidation.discountAmount;
+
+      couponRedemption = await couponService.reserveCouponUsage({
+        couponId: couponValidation.coupon._id,
+        userId,
+        discountAmount: couponDiscount,
+        eligibleSubtotal: couponValidation.eligibleSubtotal,
+        session
+      });
+
+      couponSnapshot = {
+        couponId: couponValidation.coupon._id,
+        code: couponValidation.coupon.code,
+        discountAmount: couponDiscount,
+        discountType: couponValidation.coupon.discountType,
+        discountValue: couponValidation.coupon.discountValue
+      };
+    }
+
+    const discount = couponDiscount;
     const totalAmount = subtotal - discount;
 
     for (const item of orderItems) {
@@ -122,6 +158,7 @@ export const createOrder = async ({
           shippingAddress,
           subtotal,
           discount,
+          coupon: couponSnapshot || undefined,
           totalAmount,
           paymentMethod,
           paymentStatus:
@@ -135,14 +172,31 @@ export const createOrder = async ({
       }
     );
 
-    // Only clear cart for COD orders
-    // For ONLINE payments, cart will be cleared after payment verification
+    // Finalize coupon redemption for COD orders
+    if (paymentMethod === "COD" && couponRedemption) {
+      await couponService.finalizeCouponRedemption({
+        redemptionId: couponRedemption._id,
+        orderId: order._id,
+        session
+      });
+    }
+
+    if (paymentMethod === "ONLINE" && couponRedemption) {
+      couponRedemption.orderId = order._id;
+      await couponRedemption.save({ session });
+    }
+
     if (paymentMethod === "COD") {
       cart.items = [];
       await cart.save({ session });
     }
 
     await session.commitTransaction();
+    
+    if (couponRedemption) {
+      order._couponRedemptionId = couponRedemption._id;
+    }
+    
     return order;
   } catch (error) {
     await session.abortTransaction();
@@ -151,9 +205,6 @@ export const createOrder = async ({
     await session.endSession();
   }
 };
-
-
-// Get customer orders
 export const getCustomerOrders = async (userId, { page = 1, limit = 10, status } = {}) => {
   const skip = (page - 1) * limit;
   
@@ -182,11 +233,9 @@ export const getCustomerOrders = async (userId, { page = 1, limit = 10, status }
   };
 };
 
-// Get admin orders (orders containing their sarees)
 export const getAdminOrders = async (adminId, { page = 1, limit = 10, status } = {}) => {
   const skip = (page - 1) * limit;
 
-  // Find orders that contain sarees from this admin
   const query = {
     "items.sareeId": {
       $in: await Saree.find({ admin: adminId }).distinct("_id")
@@ -218,7 +267,6 @@ export const getAdminOrders = async (adminId, { page = 1, limit = 10, status } =
   };
 };
 
-// Get order by ID
 export const getOrderById = async (orderId, userId, userRole) => {
   const order = await Order.findById(orderId)
     .populate("userId", "name email phone address")
@@ -228,13 +276,11 @@ export const getOrderById = async (orderId, userId, userRole) => {
     throw new ApiError(404, "Order not found");
   }
 
-  // Check authorization
   if (userRole === "customer" && order.userId._id.toString() !== userId.toString()) {
     throw new ApiError(403, "Unauthorized to view this order");
   }
 
   if (userRole === "admin") {
-    // Check if admin has any saree in this order
     const adminSarees = await Saree.find({ admin: userId }).distinct("_id");
     const hasAdminSaree = order.items.some(item => 
       adminSarees.some(sareeId => sareeId.toString() === item.sareeId.toString())
@@ -248,7 +294,6 @@ export const getOrderById = async (orderId, userId, userRole) => {
   return order;
 };
 
-// Update order status (admin only)
 export const updateOrderStatus = async (orderId, adminId, newStatus) => {
   const order = await Order.findById(orderId);
 
@@ -256,7 +301,6 @@ export const updateOrderStatus = async (orderId, adminId, newStatus) => {
     throw new ApiError(404, "Order not found");
   }
 
-  // Check if admin has any saree in this order
   const adminSarees = await Saree.find({ admin: adminId }).distinct("_id");
   const hasAdminSaree = order.items.some(item => 
     adminSarees.some(sareeId => sareeId.toString() === item.sareeId.toString())
@@ -266,7 +310,6 @@ export const updateOrderStatus = async (orderId, adminId, newStatus) => {
     throw new ApiError(403, "Unauthorized to update this order");
   }
 
-  // Validate status transition
   const validStatuses = [
     "PENDING",
     "PLACED",
@@ -287,7 +330,6 @@ export const updateOrderStatus = async (orderId, adminId, newStatus) => {
   return order;
 };
 
-// Cancel order (customer only - before processing)
 export const cancelOrder = async (orderId, userId) => {
   const order = await Order.findOne({
     _id: orderId,
@@ -298,7 +340,6 @@ export const cancelOrder = async (orderId, userId) => {
     throw new ApiError(404, "Order not found");
   }
 
-  // Can only cancel if order is not yet processed
   if (["PROCESSING", "SHIPPED", "DELIVERED"].includes(order.orderStatus)) {
     throw new ApiError(400, "Cannot cancel order that is already being processed or delivered");
   }
@@ -307,7 +348,6 @@ export const cancelOrder = async (orderId, userId) => {
     throw new ApiError(400, "Order is already cancelled");
   }
 
-  // Restore stock
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -320,9 +360,25 @@ export const cancelOrder = async (orderId, userId) => {
       );
     }
 
+    if (order.coupon && order.coupon.couponId) {
+      const CouponRedemption = (await import("../models/CouponRedemption.js")).default;
+      
+      const redemption = await CouponRedemption.findOne({
+        orderId: order._id,
+        status: { $in: ["RESERVED", "REDEEMED"] }
+      }).session(session);
+
+      if (redemption) {
+        await couponService.releaseCouponReservation({
+          redemptionId: redemption._id,
+          session
+        });
+      }
+    }
+
     order.orderStatus = "CANCELLED";
     if (order.paymentStatus === "PAID") {
-      order.paymentStatus = "REFUNDED"; // Mark for refund
+      order.paymentStatus = "REFUNDED"; 
     }
     await order.save({ session });
 
