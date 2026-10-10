@@ -27,11 +27,16 @@ export const getAllCoupons = async ({
   limit = 10,
   isActive,
   discountType,
-  search
+  search,
+  adminId
 } = {}) => {
   const skip = (page - 1) * limit;
   
   const query = {};
+
+  if (adminId) {
+    query.createdBy = adminId;
+  }
 
   if (isActive !== undefined) {
     query.isActive = isActive;
@@ -50,7 +55,7 @@ export const getAllCoupons = async ({
 
   const [coupons, total] = await Promise.all([
     Coupon.find(query)
-      .populate("createdBy", "name email")
+      .populate("createdBy", "name email shopName")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -96,13 +101,17 @@ export const getAllCoupons = async ({
   };
 };
 
-export const getCouponById = async (couponId) => {
+export const getCouponById = async (couponId, adminId = null) => {
   const coupon = await Coupon.findById(couponId)
-    .populate("createdBy", "name email")
+    .populate("createdBy", "name email shopName")
     .lean();
 
   if (!coupon) {
     throw new ApiError(404, "Coupon not found");
+  }
+
+  if (adminId && coupon.createdBy._id.toString() !== adminId.toString()) {
+    throw new ApiError(403, "You don't have permission to view this coupon");
   }
 
   const [totalRedeemed, totalReserved, totalReleased, totalExpired] = await Promise.all([
@@ -113,7 +122,6 @@ export const getCouponById = async (couponId) => {
   ]);
 
   const totalUsage = totalRedeemed + totalReserved;
-
   return {
     ...coupon,
     usageStats: {
@@ -128,11 +136,15 @@ export const getCouponById = async (couponId) => {
 };
 
 
-export const updateCoupon = async (couponId, updateData) => {
+export const updateCoupon = async (couponId, updateData, adminId = null) => {
   const coupon = await Coupon.findById(couponId);
 
   if (!coupon) {
     throw new ApiError(404, "Coupon not found");
+  }
+
+  if (adminId && coupon.createdBy.toString() !== adminId.toString()) {
+    throw new ApiError(403, "You don't have permission to update this coupon");
   }
 
   const redemptionCount = await CouponRedemption.countDocuments({
@@ -169,11 +181,15 @@ export const updateCoupon = async (couponId, updateData) => {
   return coupon;
 };
 
-export const toggleCouponStatus = async (couponId, isActive) => {
+export const toggleCouponStatus = async (couponId, isActive, adminId = null) => {
   const coupon = await Coupon.findById(couponId);
 
   if (!coupon) {
     throw new ApiError(404, "Coupon not found");
+  }
+
+  if (adminId && coupon.createdBy.toString() !== adminId.toString()) {
+    throw new ApiError(403, "You don't have permission to modify this coupon");
   }
 
   coupon.isActive = isActive;
@@ -183,11 +199,15 @@ export const toggleCouponStatus = async (couponId, isActive) => {
 };
 
 
-export const deleteCoupon = async (couponId) => {
+export const deleteCoupon = async (couponId, adminId = null) => {
   const coupon = await Coupon.findById(couponId);
 
   if (!coupon) {
     throw new ApiError(404, "Coupon not found");
+  }
+
+  if (adminId && coupon.createdBy.toString() !== adminId.toString()) {
+    throw new ApiError(403, "You don't have permission to delete this coupon");
   }
 
   const redemptionCount = await CouponRedemption.countDocuments({
@@ -214,11 +234,15 @@ export const deleteCoupon = async (couponId) => {
 };
 
 
-export const getCouponRedemptionHistory = async (couponId, { page = 1, limit = 20 } = {}) => {
+export const getCouponRedemptionHistory = async (couponId, { page = 1, limit = 20 } = {}, adminId = null) => {
   const coupon = await Coupon.findById(couponId);
 
   if (!coupon) {
     throw new ApiError(404, "Coupon not found");
+  }
+
+  if (adminId && coupon.createdBy.toString() !== adminId.toString()) {
+    throw new ApiError(403, "You don't have permission to view this coupon's history");
   }
 
   const skip = (page - 1) * limit;

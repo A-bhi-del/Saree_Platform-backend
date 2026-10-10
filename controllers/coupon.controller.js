@@ -90,13 +90,15 @@ export const createCoupon = asyncHandler(async (req, res) => {
 
 export const getAllCoupons = asyncHandler(async (req, res) => {
   const { page, limit, isActive, discountType, search } = req.query;
+  const adminId = req.user._id; 
 
   const result = await adminCouponService.getAllCoupons({
     page: parseInt(page) || 1,
     limit: parseInt(limit) || 10,
     isActive: isActive === "true" ? true : isActive === "false" ? false : undefined,
     discountType: discountType && discountType !== "all" ? discountType : undefined,
-    search
+    search,
+    adminId 
   });
 
   return res.status(200).json(
@@ -111,8 +113,9 @@ export const getAllCoupons = asyncHandler(async (req, res) => {
 
 export const getCouponById = asyncHandler(async (req, res) => {
   const couponId = req.params.id;
+  const adminId = req.user._id; 
 
-  const coupon = await adminCouponService.getCouponById(couponId);
+  const coupon = await adminCouponService.getCouponById(couponId, adminId);
 
   return res.status(200).json(
     new ApiResponse(
@@ -126,8 +129,9 @@ export const getCouponById = asyncHandler(async (req, res) => {
 export const updateCoupon = asyncHandler(async (req, res) => {
   const couponId = req.params.id;
   const updateData = req.body;
+  const adminId = req.user._id; 
 
-  const coupon = await adminCouponService.updateCoupon(couponId, updateData);
+  const coupon = await adminCouponService.updateCoupon(couponId, updateData, adminId);
 
   return res.status(200).json(
     new ApiResponse(
@@ -141,8 +145,9 @@ export const updateCoupon = asyncHandler(async (req, res) => {
 export const toggleCouponStatus = asyncHandler(async (req, res) => {
   const couponId = req.params.id;
   const { isActive } = req.body;
+  const adminId = req.user._id; 
 
-  const coupon = await adminCouponService.toggleCouponStatus(couponId, isActive);
+  const coupon = await adminCouponService.toggleCouponStatus(couponId, isActive, adminId);
 
   return res.status(200).json(
     new ApiResponse(
@@ -155,8 +160,9 @@ export const toggleCouponStatus = asyncHandler(async (req, res) => {
 
 export const deleteCoupon = asyncHandler(async (req, res) => {
   const couponId = req.params.id;
+  const adminId = req.user._id; 
 
-  const result = await adminCouponService.deleteCoupon(couponId);
+  const result = await adminCouponService.deleteCoupon(couponId, adminId);
 
   return res.status(200).json(
     new ApiResponse(
@@ -170,13 +176,15 @@ export const deleteCoupon = asyncHandler(async (req, res) => {
 export const getCouponRedemptionHistory = asyncHandler(async (req, res) => {
   const couponId = req.params.id;
   const { page, limit } = req.query;
+  const adminId = req.user._id; 
 
   const result = await adminCouponService.getCouponRedemptionHistory(
     couponId,
     {
       page: parseInt(page) || 1,
       limit: parseInt(limit) || 20
-    }
+    },
+    adminId
   );
 
   return res.status(200).json(
@@ -185,6 +193,38 @@ export const getCouponRedemptionHistory = asyncHandler(async (req, res) => {
       "Redemption history fetched successfully",
       result.redemptions,
       result.pagination
+    )
+  );
+});
+
+export const getAvailableCoupons = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  const cart = await Cart.findOne({ userId }).populate({
+    path: 'items.sareeId',
+    select: 'name price discountPercentage category admin images'
+  });
+
+  if (!cart || cart.items.length === 0) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        "No items in cart",
+        []
+      )
+    );
+  }
+
+  const coupons = await couponService.getAvailableCouponsForCart({
+    userId,
+    cartItems: cart.items
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Available coupons fetched successfully",
+      coupons
     )
   );
 });

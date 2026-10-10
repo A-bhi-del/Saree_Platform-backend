@@ -46,7 +46,17 @@ const getEligibleItems = async (cartItems, coupon) => {
     let isEligible = true;
     let ineligibilityReason = null;
 
-    if (!coupon.allowSaleItems && isSaleItem(saree)) {
+    if (saree.admin && coupon.createdBy) {
+      const sareeAdminId = saree.admin.toString();
+      const couponAdminId = coupon.createdBy.toString();
+      
+      if (sareeAdminId !== couponAdminId) {
+        isEligible = false;
+        ineligibilityReason = "This coupon is only valid for products from a specific shop";
+      }
+    }
+
+    if (isEligible && !coupon.allowSaleItems && isSaleItem(saree)) {
       isEligible = false;
       ineligibilityReason = "Sale items are not eligible for this coupon";
     }
@@ -430,4 +440,109 @@ export const validateCouponForOrder = async ({ code, userId, cartItems }) => {
   } catch (error) {
     throw error;
   }
+};
+
+export const getAvailableCouponsForCart = async ({ userId, cartItems }) => {
+  if (!cartItems || cartItems.length === 0) {
+    return [];
+  }
+
+  const adminIds = [...new Set(
+    cartItems
+      .map(item => {
+        const saree = item.sareeId || item.saree;
+        return saree?.admin;
+      })
+      .filter(Boolean)
+      .map(id => id.toString())
+  )];
+
+  if (adminIds.length === 0) {
+    return [];
+  }
+
+  const now = new Date();
+
+  const coupons = await Coupon.find({
+    createdBy: { $in: adminIds },
+    isActive: true,
+    startsAt: { $lte: now },
+    expiresAt: { $gte: now }
+  }).populate('createdBy', 'name shopName');
+
+  const availableCoupons = [];
+
+  for (const coupon of coupons) {
+    try {
+      if (coupon.usageLimit) {
+        const totalRedemptions = await CouponRedemption.countDocuments({
+          couponId: coupon._id,
+          status: { $in: ["RESERVED", "REDEEMED"] }
+        });
+        if (totalRedemptions >= coupon.usageLimit) {
+          continue;
+        }
+      }
+
+      const userRedemptions = await CouponRedemption.countDocuments({
+        couponId: coupon._id,
+        userId: userId,
+        status: { $in: ["RESERVED", "REDEEMED"] }
+      });
+      if (userRedemptions >= coupon.perUserLimit) {
+        continue;
+      }
+
+      if (coupon.firstOrderOnly) {
+        const existingOrders = await Order.countDocuments({
+          userId: userId,
+          orderStatus: { $nin: ["CANCELLED"] }
+        });
+        if (existingOrders > 0) {
+          continue;
+        }
+      }
+
+      const { eligibleSubtotal, eligibleItems } = await getEligibleItems(cartItems, coupon);
+
+      if (eligibleItems.length === 0) {
+        continue;
+      }
+
+      let potentialDiscount = 0;
+      const meetsMinimum = eligibleSubtotal >= coupon.minOrderAmount;
+
+      if (meetsMinimum) {
+        potentialDiscount = calculateDiscountAmount(eligibleSubtotal, coupon);
+      }
+
+      availableCoupons.push({
+        _id: coupon._id,
+        code: coupon.code,
+        description: coupon.description,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        maxDiscountAmount: coupon.maxDiscountAmount,
+        minOrderAmount: coupon.minOrderAmount,
+        expiresAt: coupon.expiresAt,
+        shopName: coupon.createdBy?.shopName || coupon.createdBy?.name || 'Shop',
+        eligibleItemsCount: eligibleItems.length,
+        totalEligibleAmount: eligibleSubtotal,
+        potentialDiscount,
+        meetsMinimum,
+        applicableCategories: coupon.applicableCategories,
+        firstOrderOnly: coupon.firstOrderOnly,
+        allowSaleItems: coupon.allowSaleItems,
+        perUserLimit: coupon.perUserLimit,
+        userUsageCount: userRedemptions
+      });
+    } catch (error) {
+      console.error(`Error processing coupon ${coupon.code}:`, error);
+      continue;
+    }
+  }
+
+  availableCoupons.sort((a, b) => b.potentialDiscount - a.potentialDiscount);
+
+  return availableCoupons;
 };

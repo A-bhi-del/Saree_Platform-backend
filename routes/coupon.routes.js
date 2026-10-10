@@ -27,6 +27,12 @@ router.post(
   couponController.removeCoupon
 );
 
+router.get(
+  "/available",
+  protect,
+  couponController.getAvailableCoupons
+);
+
 
 router.post(
   "/admin",
